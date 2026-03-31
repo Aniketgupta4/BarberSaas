@@ -137,29 +137,38 @@ exports.addEmployee = async (req, res) => {
 // 5. Render "Requests" Page
 exports.getOwnerRequests = async (req, res) => {
     try {
-        const shop = await Shop.findOne({ ownerId: res.locals.user._id });
+        const ownerId = res.locals.user._id;
+        const shop = await Shop.findOne({ ownerId });
+
         if (!shop) {
-            return res.render('owner-requests', { 
-                title: 'Requests', 
-                appointments: [], 
-                error: 'Please setup your shop details first' 
-            });
+            return res.render('owner-requests', { appointments: [], error: 'Please setup your shop profile first.' });
         }
 
-        // Saari bookings fetch karo aur customer/service ki details populate karo
+        // 🔢 Pagination Setup
+        const page = parseInt(req.query.page) || 1;
+        const limit = 5; // Ek page par 5 bookings
+        const skip = (page - 1) * limit;
+
+        const totalAppointments = await Appointment.countDocuments({ shopId: shop._id });
+        const totalPages = Math.ceil(totalAppointments / limit);
+
+        // Fetch paginated bookings
         const appointments = await Appointment.find({ shopId: shop._id })
             .populate('userId', 'name phone email')
             .populate('serviceId', 'serviceName price duration')
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
 
         res.render('owner-requests', { 
             title: 'Booking Requests', 
-            appointments, 
-            error: null 
+            appointments,
+            currentPage: page,  // Pagination variables
+            totalPages
         });
     } catch (error) {
         console.error("Requests Page Error:", error);
-        res.status(500).send("Server Error while loading requests");
+        res.status(500).send("Server Error");
     }
 };
 
@@ -168,10 +177,11 @@ exports.updateRequest = async (req, res) => {
     try {
         const { appointmentId, status, proposedDate, proposedTime } = req.body;
         
-        console.log("Data Received:", req.body); 
+        console.log("Button Clicked! Status:", status); // Terminal mein check karo ye aa raha hai?
 
-        const updateData = { status: status };
+        let updateData = { status: status };
 
+        // Agar Reschedule kiya hai toh date/time bhi badlo
         if (status === 'Rescheduled' && proposedDate && proposedTime) {
             updateData.bookingDate = proposedDate;
             updateData.bookingTime = proposedTime;
@@ -179,10 +189,11 @@ exports.updateRequest = async (req, res) => {
 
         await Appointment.findByIdAndUpdate(appointmentId, updateData);
         
+        console.log("Database Updated! ✅");
         res.redirect('/owner/requests'); 
     } catch (error) {
-        console.error(error);
-        res.status(500).send("Error updating");
+        console.error("Update Error:", error);
+        res.status(500).send("Update fail ho gaya bhai!");
     }
 };
 
@@ -282,5 +293,20 @@ exports.getHome = async (req, res) => {
     } catch (error) {
         console.error("Home Search Error:", error);
         res.status(500).send("Bhai search failed ho gayi!");
+    }
+};
+
+
+// 2. Naya Function: Booking Delete Karne Ke Liye
+exports.deleteRequest = async (req, res) => {
+    try {
+        const appointmentId = req.params.id;
+        await Appointment.findByIdAndDelete(appointmentId);
+        
+        console.log("Record Permanently Deleted! 🗑️");
+        res.redirect('/owner/requests');
+    } catch (error) {
+        console.error("Delete Error:", error);
+        res.status(500).send("Delete nahi ho paya.");
     }
 };

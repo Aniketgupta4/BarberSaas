@@ -1,49 +1,108 @@
 <%- include('partials/header') %>
 
 <style>
+    :root {
+        --primary: #3b82f6;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --dark: #0f172a;
+        --slate: #64748b;
+    }
+
     .dashboard-page { padding: 40px 0; background: #f8fafc; min-height: 100vh; }
+    
+    /* 👤 Profile Header */
     .dashboard-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 20px; }
     .user-profile-summary { display: flex; align-items: center; gap: 20px; }
-    .user-avatar-large { width: 70px; height: 70px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 1.8rem; font-weight: 800; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
+    .user-avatar-large { 
+        width: 70px; height: 70px; background: linear-gradient(135deg, var(--primary), #8b5cf6); 
+        color: white; display: flex; align-items: center; justify-content: center; 
+        border-radius: 20px; font-size: 1.8rem; font-weight: 800; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2); 
+    }
     
+    /* 📊 Stats Section */
     .stats-container { display: flex; gap: 15px; }
-    .stat-card { background: white; padding: 15px 25px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center; }
-    .stat-card.highlighted { background: var(--primary); border-color: var(--primary); color: white; }
-    .stat-value { display: block; font-size: 1.5rem; font-weight: 800; }
-    .stat-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; opacity: 0.8; }
+    .stat-card { background: white; padding: 15px 25px; border-radius: 16px; border: 1px solid #e2e8f0; text-align: center; min-width: 120px; }
+    
+    /* 🔥 FIX: Explicitly set text colors to white for the highlighted card */
+    .stat-card.highlighted { 
+        background: var(--primary); 
+        border-color: var(--primary); 
+        box-shadow: 0 8px 15px -3px rgba(59, 130, 246, 0.4); /* Nice blue glow */
+    }
+    .stat-card.highlighted .stat-value,
+    .stat-card.highlighted .stat-label { 
+        color: #ffffff !important; 
+        opacity: 1; /* Removes any fade */
+    }
 
+    .stat-value { display: block; font-size: 1.5rem; font-weight: 800; color: var(--dark); }
+    .stat-label { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; opacity: 0.7; letter-spacing: 1px; color: var(--slate); }
+
+    /* 📅 Booking Cards */
     .section-title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-    .btn-book-new { background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; }
+    .btn-book-new { background: var(--primary); color: white; padding: 12px 24px; border-radius: 12px; font-weight: 700; text-decoration: none; transition: 0.3s; }
+    .btn-book-new:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3); }
 
-    /* Booking Cards */
     .bookings-grid { display: flex; flex-direction: column; gap: 20px; }
-    .booking-item-card { background: white; border-radius: 16px; padding: 25px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #f1f5f9; position: relative; overflow: hidden; transition: 0.3s; }
-    .booking-item-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+    .booking-item-card { 
+        background: white; border-radius: 20px; padding: 25px; display: flex; 
+        justify-content: space-between; align-items: center; border: 1px solid #f1f5f9; 
+        position: relative; transition: 0.3s; 
+    }
+    .booking-item-card:hover { transform: scale(1.01); box-shadow: 0 15px 30px rgba(0,0,0,0.05); }
     
-    /* Dynamic Borders based on Status */
-    .status-accepted { border-left: 6px solid #10b981; }
-    .status-pending { border-left: 6px solid #94a3b8; }
-    .status-rescheduled { border-left: 6px solid #f59e0b; }
-    .status-rejected { border-left: 6px solid #ef4444; }
+    /* Status Styling */
+    .status-accepted { border-left: 8px solid var(--success); }
+    .status-pending { border-left: 8px solid var(--slate); }
+    .status-rescheduled { border-left: 8px solid var(--warning); }
+    .status-rejected { border-left: 8px solid var(--danger); }
 
-    .shop-icon-circle { width: 50px; height: 50px; background: #eff6ff; color: var(--primary); display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 1.2rem; }
-    .main-info h4 { font-size: 1.2rem; margin-bottom: 5px; }
-    .shop-name { color: var(--dark); font-weight: 600; font-size: 0.9rem; }
-    .shop-location { color: var(--slate); font-size: 0.85rem; margin-bottom: 10px; }
-    .time-meta { display: flex; gap: 15px; color: var(--slate); font-size: 0.85rem; font-weight: 500; }
-
-    .reschedule-box { margin-top: 15px; background: #fffbeb; border: 1px solid #fef3c7; padding: 12px; border-radius: 8px; color: #92400e; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; }
-    .btn-accept-new { background: #d97706; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-left: 10px; }
-
-    .card-right { text-align: right; }
-    .price-info { font-size: 1.6rem; font-weight: 800; color: #059669; }
-    .status-pill { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-top: 8px; }
+    .shop-icon-circle { width: 50px; height: 50px; background: #eff6ff; color: var(--primary); display: flex; align-items: center; justify-content: center; border-radius: 14px; font-size: 1.2rem; }
     
-    /* Pill Colors */
+    .main-info h4 { font-size: 1.25rem; font-weight: 800; color: var(--dark); margin: 0 0 5px 0; }
+    .shop-name { color: var(--primary); font-weight: 700; font-size: 0.9rem; margin-bottom: 3px; }
+    .shop-location { color: var(--slate); font-size: 0.85rem; margin-bottom: 12px; display: flex; align-items: center; gap: 5px; }
+
+    /* 🕒 Meta Info */
+    .time-meta { display: flex; gap: 15px; color: var(--dark); font-size: 0.85rem; font-weight: 700; background: #f8fafc; padding: 8px 15px; border-radius: 10px; width: fit-content; }
+    .time-meta i { color: var(--primary); }
+
+    /* 📅 Reschedule Alert Box */
+    .reschedule-box { 
+        margin-top: 20px; background: #fffbeb; border: 1px dashed var(--warning); 
+        padding: 15px; border-radius: 12px; color: #92400e; font-size: 0.9rem; 
+        display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+    }
+    .btn-confirm-res { background: var(--warning); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 700; transition: 0.2s; }
+
+    .card-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+    .price-info { font-size: 1.6rem; font-weight: 900; color: var(--success); margin-bottom: -5px; }
+    .status-pill { display: inline-block; padding: 5px 14px; border-radius: 10px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+    
     .pill-accepted { background: #d1fae5; color: #065f46; }
     .pill-pending { background: #f1f5f9; color: #475569; }
     .pill-rescheduled { background: #fef3c7; color: #92400e; }
     .pill-rejected { background: #fee2e2; color: #991b1b; }
+
+    /* Cancel Button */
+    .btn-cancel-booking { background: white; color: var(--danger); border: 1px solid var(--danger); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.75rem; transition: 0.3s; margin-top: 5px; width: 100%; }
+    .btn-cancel-booking:hover { background: var(--danger); color: white; }
+
+    /* Pagination UI */
+    .pagination-container { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 40px; }
+    .page-btn { padding: 10px 20px; background: white; border: 1px solid #cbd5e1; border-radius: 10px; color: var(--dark); text-decoration: none; font-weight: 700; transition: 0.3s; }
+    .page-btn:hover { background: #f1f5f9; border-color: var(--slate); }
+    .page-indicator { padding: 10px 20px; background: var(--primary); color: white; border-radius: 10px; font-weight: 800; box-shadow: 0 4px 10px rgba(59,130,246,0.3); }
+
+    @media (max-width: 768px) {
+        .booking-item-card { flex-direction: column; align-items: flex-start; gap: 20px; }
+        .card-right { width: 100%; text-align: left; display: flex; flex-direction: row; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 15px; flex-wrap: wrap; }
+        .dashboard-header-flex { text-align: center; justify-content: center; }
+        .user-profile-summary { flex-direction: column; }
+        .stats-container { width: 100%; justify-content: center; }
+    }
 </style>
 
 <div class="dashboard-page">
@@ -54,19 +113,19 @@
                     <%= user.name.charAt(0).toUpperCase() %>
                 </div>
                 <div class="welcome-text">
-                    <h1>Welcome, <%= user.name %>! 👋</h1>
-                    <p>Track your appointments and grooming history.</p>
+                    <h1 style="margin: 0; font-weight: 900;">Hey, <%= user.name %>! 👋</h1>
+                    <p style="margin: 5px 0 0; color: var(--slate);">Here's what's happening with your style schedule.</p>
                 </div>
             </div>
 
             <div class="stats-container">
                 <div class="stat-card">
-                    <span class="stat-value"><%= appointments.length %></span>
-                    <span class="stat-label">Bookings</span>
+                    <span class="stat-value"><%= appointments ? appointments.length : 0 %></span>
+                    <span class="stat-label">Total</span>
                 </div>
                 <div class="stat-card highlighted">
                     <span class="stat-value">
-                        <%= appointments.filter(a => a.status === 'Accepted').length %>
+                        <%= appointments ? appointments.filter(a => a.status === 'Accepted').length : 0 %>
                     </span>
                     <span class="stat-label">Confirmed</span>
                 </div>
@@ -75,37 +134,40 @@
 
         <div class="bookings-wrapper">
             <div class="section-title-bar">
-                <h3><i class="fas fa-calendar-check"></i> Recent Appointments</h3>
-                <a href="/" class="btn-book-new">Book New Service <i class="fas fa-plus"></i></a>
+                <h3 style="font-weight: 800; color: var(--dark);"><i class="fas fa-history" style="color: var(--primary);"></i> Booking History</h3>
+                <a href="/" class="btn-book-new">Book New Service <i class="fas fa-plus" style="font-size: 0.8rem; margin-left: 5px;"></i></a>
             </div>
 
             <div class="bookings-grid">
                 <% if (appointments && appointments.length > 0) { %>
                     <% appointments.forEach(app => { %>
-                        <div class="booking-item-card status-<%= app.status.toLowerCase() %>">
+                        <div class="booking-item-card status-<%= app.status ? app.status.toLowerCase() : 'pending' %>">
                             <div style="display: flex; gap: 20px; align-items: flex-start;">
                                 <div class="shop-icon-circle">
-                                    <i class="fas fa-cut"></i>
+                                    <i class="fas fa-magic"></i>
                                 </div>
                                 <div class="main-info">
-                                    <h4><%= app.serviceId.serviceName %></h4>
-                                    <p class="shop-name">🏪 <%= app.shopId.shopName %></p>
-                                    <p class="shop-location"><i class="fas fa-map-marker-alt"></i> <%= app.shopId.address %></p>
+                                    <h4><%= app.serviceId ? app.serviceId.serviceName : 'Service Deleted' %></h4>
+                                    <p class="shop-name">🏪 <%= app.shopId ? app.shopId.shopName : 'Shop Unavailable' %></p>
+                                    <p class="shop-location">
+                                        <i class="fas fa-map-marker-alt"></i> 
+                                        <%= app.shopId ? app.shopId.address : 'Location missing' %>
+                                    </p>
                                     
                                     <div class="time-meta">
-                                        <span><i class="far fa-calendar"></i> <%= new Date(app.bookingDate).toDateString() %></span>
+                                        <span><i class="far fa-calendar-alt"></i> <%= new Date(app.bookingDate).toDateString() %></span>
                                         <span><i class="far fa-clock"></i> <%= app.bookingTime %></span>
                                     </div>
 
-                                    <% if (app.status === 'Rescheduled' && app.proposedTime) { %>
+                                    <% if (app.status === 'Rescheduled' && app.bookingDate && app.bookingTime) { %>
                                         <div class="reschedule-box">
-                                            <i class="fas fa-info-circle"></i>
                                             <span>
-                                                Suggested: <strong><%= new Date(app.proposedDate).toDateString() %></strong> at <strong><%= app.proposedTime %></strong>
+                                                <i class="fas fa-exclamation-circle"></i> 
+                                                Barber suggested a new time. Do you agree?
                                             </span>
-                                            <form action="/user/confirm-reschedule" method="POST" style="display:inline;">
+                                            <form action="/user/confirm-reschedule" method="POST" style="margin: 0;">
                                                 <input type="hidden" name="appointmentId" value="<%= app._id %>">
-                                                <button type="submit" class="btn-accept-new">Accept Time</button>
+                                                <button type="submit" class="btn-confirm-res">Accept New Time</button>
                                             </form>
                                         </div>
                                     <% } %>
@@ -113,25 +175,56 @@
                             </div>
 
                             <div class="card-right">
-                                <div class="price-info">₹<%= app.serviceId.price %></div>
-                                <div class="status-pill pill-<%= app.status.toLowerCase() %>">
+                                <div class="price-info">₹<%= app.serviceId ? app.serviceId.price : '0' %></div>
+                                <div class="status-pill pill-<%= app.status ? app.status.toLowerCase() : 'pending' %>">
                                     <%= app.status %>
                                 </div>
+                                
                                 <% if (app.status === 'Accepted') { %>
-                                    <div style="color: #059669; font-size: 0.75rem; font-weight: 700; margin-top: 5px;">Confirmed! See you soon.</div>
+                                    <div style="color: var(--success); font-size: 0.75rem; font-weight: 800; margin-top: 5px;">
+                                        <i class="fas fa-check-double"></i> Ready to go!
+                                    </div>
                                 <% } %>
+
+                                <form action="/user/delete-booking/<%= app._id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this record? This action cannot be undone.');">
+                                    <button type="submit" class="btn-cancel-booking">
+                                        <i class="fas fa-trash-alt"></i> 
+                                        <%= (app.status === 'Pending' || app.status === 'Rescheduled') ? 'Cancel Booking' : 'Delete Record' %>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     <% }) %>
                 <% } else { %>
-                    <div style="text-align: center; padding: 60px; background: white; border-radius: 20px; border: 2px dashed #e2e8f0;">
-                        <img src="https://cdn-icons-png.flaticon.com/512/4076/4076402.png" style="width: 80px; opacity: 0.5; margin-bottom: 20px;">
-                        <h3>No bookings yet</h3>
-                        <p>Book your first haircut and look your best!</p>
-                        <a href="/" class="btn-book-new" style="display: inline-block; margin-top: 15px;">Browse Shops</a>
+                    <div style="text-align: center; padding: 80px 20px; background: white; border-radius: 24px; border: 2px dashed #e2e8f0;">
+                        <div style="font-size: 3rem; color: #cbd5e1; margin-bottom: 20px;"><i class="fas fa-calendar-times"></i></div>
+                        <h3 style="color: var(--dark); font-weight: 800;">No appointments yet</h3>
+                        <p style="color: var(--slate); margin-bottom: 25px;">Time for a fresh look? Discover the best shops around you.</p>
+                        <a href="/" class="btn-book-new">Browse Barbershops</a>
                     </div>
                 <% } %>
             </div>
+
+            <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+                <div class="pagination-container">
+                    <% if (currentPage > 1) { %>
+                        <a href="/user/dashboard?page=<%= currentPage - 1 %>" class="page-btn">
+                            <i class="fas fa-chevron-left"></i> Prev
+                        </a>
+                    <% } %>
+
+                    <span class="page-indicator">
+                        Page <%= currentPage %> of <%= totalPages %>
+                    </span>
+
+                    <% if (currentPage < totalPages) { %>
+                        <a href="/user/dashboard?page=<%= currentPage + 1 %>" class="page-btn">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </a>
+                    <% } %>
+                </div>
+            <% } %>
+
         </div>
     </div>
 </div>

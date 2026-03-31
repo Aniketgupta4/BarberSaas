@@ -8,4 +8,8 @@ router.use(requireAuth, requireRole('Customer'));
 
 router.get('/dashboard', userController.getUserDashboard);
 
+router.post('/delete-booking/:id', userController.deleteBooking);
+
+router.post('/confirm-reschedule', userController.confirmReschedule);
+
 module.exports = router;
