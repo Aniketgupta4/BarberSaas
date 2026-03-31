@@ -4,37 +4,37 @@ const Appointment = require('../models/Appointment');
 const bcrypt = require('bcryptjs');
 
 // Render Admin Dashboard
-// adminController.js
 exports.getAdminDashboard = async (req, res) => {
     try {
-        // 1. Pagination Logic
-        const page = parseInt(req.query.page) || 1; // Current page number (default 1)
-        const limit = 5; // Ek page pe kitne owners dikhane hain
+        // 🔢 Pagination Setup
+        const page = parseInt(req.query.page) || 1;
+        const limit = 3; // Ek page par 3 partners
         const skip = (page - 1) * limit;
 
-        // 2. Data Fetching
+        // 📊 Dashboard Stats Ke Liye Total Counts
         const totalOwners = await User.countDocuments({ role: 'BarberOwner' });
+        const totalShops = await Shop.countDocuments();
+        const totalBookings = await Appointment.countDocuments();
+        
+        const totalPages = Math.ceil(totalOwners / limit);
+
+        // 🔴 CRITICAL FIX: Variable ka naam 'partners' se badal kar 'owners' kiya hai
         const owners = await User.find({ role: 'BarberOwner' })
-            .sort({ createdAt: -1 }) // Naye owners upar dikhenge
+            .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
 
-        const totalPages = Math.ceil(totalOwners / limit);
-
-        // Baaki stats (Total Shops, Bookings etc.)
-        const totalShops = await Shop.countDocuments();
-        // const totalBookings = await Appointment.countDocuments(); // Agar model hai toh
-
-        res.render('admin-dashboard', {
-            owners,
-            totalOwners,
-            totalShops,
-            currentPage: page,
-            totalPages,
-            user: res.locals.user
+        res.render('admin-dashboard', { 
+            title: 'Admin Dashboard', 
+            owners,          // EJS ab isko aaram se read kar lega
+            totalOwners,     // Top cards ke liye
+            totalShops,      // Top cards ke liye
+            totalBookings,   // Top cards ke liye
+            currentPage: page, 
+            totalPages
         });
     } catch (error) {
-        console.error(error);
+        console.error("Admin Dashboard Error:", error);
         res.status(500).send("Server Error");
     }
 };
@@ -70,7 +70,6 @@ exports.addBarberOwner = async (req, res) => {
     }
 };
 
-
 // Subscription Renew karne ka logic
 exports.renewSubscription = async (req, res) => {
     try {
@@ -89,5 +88,21 @@ exports.renewSubscription = async (req, res) => {
     } catch (error) {
         console.log("Renewal Error:", error);
         res.status(500).send("Error renewing subscription");
+    }
+};
+
+// 2. Delete Partner Function
+exports.deletePartner = async (req, res) => {
+    try {
+        const partnerId = req.params.id;
+        
+        // Partner (Owner) ko delete karo
+        await User.findByIdAndDelete(partnerId);
+        
+        console.log("Partner Deleted Successfully! 🗑️");
+        res.redirect('/admin/dashboard');
+    } catch (error) {
+        console.error("Delete Error:", error);
+        res.status(500).send("Delete nahi ho paya.");
     }
 };

@@ -9,4 +9,6 @@ router.post('/add-owner', requireAuth, requireRole('SuperAdmin'), adminControlle
 // ... existing routes ...
 router.post('/renew-subscription/:id', requireAuth, requireRole('SuperAdmin'), adminController.renewSubscription);
 
+router.post('/delete-partner/:id', adminController.deletePartner);
+
 module.exports = router;
