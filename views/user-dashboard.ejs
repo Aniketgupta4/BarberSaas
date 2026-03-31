@@ -1,0 +1,85 @@
+<%- include('partials/header') %>
+
+<div class="container dashboard-page">
+    <div class="dashboard-header-flex">
+        <div class="user-profile-summary">
+            <div class="user-avatar-large">
+                <%= user.name.charAt(0).toUpperCase() %>
+            </div>
+            <div class="welcome-text">
+                <h1>Welcome back, <%= user.name %>! 👋</h1>
+                <p>Manage your grooming schedule and track appointment status.</p>
+            </div>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <span class="stat-value"><%= appointments.length %></span>
+                <span class="stat-label">Total Bookings</span>
+            </div>
+            <div class="stat-card highlighted">
+                <span class="stat-value">
+                    <%= appointments.filter(a => a.status === 'Accepted').length %>
+                </span>
+                <span class="stat-label">Confirmed</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="bookings-wrapper">
+        <div class="section-title-bar">
+            <h3><i class="fas fa-calendar-alt"></i> My Recent Bookings</h3>
+            <a href="/" class="btn-book-new">Find a Barber <i class="fas fa-plus"></i></a>
+        </div>
+
+        <div class="bookings-grid">
+            <% if (appointments && appointments.length > 0) { %>
+                <% appointments.forEach(app => { %>
+                    <div class="booking-item-card status-<%= app.status.toLowerCase() %>">
+                        <div class="card-left">
+                            <div class="shop-icon-circle">
+                                <i class="fas fa-cut"></i>
+                            </div>
+                            <div class="main-info">
+                                <h4><%= app.serviceId.serviceName %></h4>
+                                <p class="shop-name">🏪 <%= app.shopId.shopName %></p>
+                                <p class="shop-location"><i class="fas fa-map-marker-alt"></i> <%= app.shopId.address %></p>
+                                
+                                <div class="time-meta">
+                                    <span><i class="far fa-calendar"></i> <%= new Date(app.bookingDate).toDateString() %></span>
+                                    <span><i class="far fa-clock"></i> <%= app.bookingTime %></span>
+                                </div>
+
+                                <% if (app.status === 'Rescheduled' && app.proposedTime) { %>
+                                    <div class="reschedule-box">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span>New suggested time: <strong><%= new Date(app.proposedDate).toDateString() %></strong> at <strong><%= app.proposedTime %></strong></span>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <div class="card-right">
+                            <div class="price-info">₹<%= app.serviceId.price %></div>
+                            <div class="status-pill">
+                                <%= app.status %>
+                            </div>
+                            <% if (app.status === 'Accepted') { %>
+                                <small class="note">See you soon!</small>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <div class="empty-bookings">
+                    <img src="https://cdn-icons-png.flaticon.com/512/4076/4076402.png" alt="No Bookings">
+                    <h3>No appointments found</h3>
+                    <p>Looks like you haven't booked anything yet. Ready for a makeover?</p>
+                    <a href="/" class="btn-primary">Browse Top Barbers</a>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,109 @@
+<%- include('partials/header') %>
+
+<section class="hero">
+    <div class="container hero-container">
+        <div class="hero-content">
+            <h1>Premium Haircuts, <br><span>Zero Waiting Time.</span></h1>
+            <p>Discover the finest barbers in your city. Book appointments instantly, manage your schedule, and look your best without the queue.</p>
+            <div class="hero-btns">
+                <a href="#shops" class="btn-primary">Explore Shops</a>
+                <a href="/signup" class="btn-secondary">Join as Barber</a>
+            </div>
+        </div>
+
+        <div class="hero-carousel">
+            <div class="carousel-container">
+                <div class="carousel-slide active">
+                    <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80" alt="Barber Shop 1">
+                </div>
+                <div class="carousel-slide">
+                    <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=800&q=80" alt="Barber Shop 2">
+                </div>
+
+
+                <button class="carousel-btn prev" id="prevBtn">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="carousel-btn next" id="nextBtn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="features">
+    <div class="container">
+        <div class="section-header">
+            <h2>How It Works</h2>
+            <p>Getting a haircut has never been this simple.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="f-icon"><i class="fas fa-search"></i></div>
+                <h3>Find a Shop</h3>
+                <p>Browse top-rated barbers near your current location.</p>
+            </div>
+            <div class="feature-card">
+                <div class="f-icon"><i class="fas fa-calendar-check"></i></div>
+                <h3>Choose a Slot</h3>
+                <p>Pick a date and time that fits your busy schedule.</p>
+            </div>
+            <div class="feature-card">
+                <div class="f-icon"><i class="fas fa-check-circle"></i></div>
+                <h3>Book & Relax</h3>
+                <p>Get instant confirmation and skip the waiting line.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="shops" class="shop-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Popular Barbershops</h2>
+            <p>Handpicked professionals for your styling needs.</p>
+        </div>
+
+        <div class="shop-grid">
+            <% if (shops && shops.length > 0) { %>
+                <% shops.forEach(shop => { %>
+                    <div class="shop-card">
+                        <div class="shop-img">
+                            <% if (shop.bannerImage && shop.bannerImage !== 'default-shop.jpg') { %>
+                                <img src="<%= shop.bannerImage %>" alt="<%= shop.shopName %>">
+                            <% } else { %>
+                                <div class="no-img">No Image Available</div>
+                            <% } %>
+                            <span class="shop-status">Open</span>
+                        </div>
+                        
+                        <div class="shop-info">
+                            <h3><%= shop.shopName %></h3>
+                            <p class="address"><i class="fas fa-map-marker-alt"></i> <%= shop.address %></p>
+                            <p class="timing"><i class="far fa-clock"></i> <%= shop.openingTime %> - <%= shop.closingTime %></p>
+                            
+                            <div class="facilities">
+                                <% if (shop.facilities && shop.facilities.length > 0) { %>
+                                    <% shop.facilities.slice(0, 3).forEach(facility => { %>
+                                        <span><%= facility %></span>
+                                    <% }) %>
+                                <% } %>
+                            </div>
+
+                            <a href="/shop/<%= shop._id %>" class="btn-book">View Services</a>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <div class="empty-state">
+                    <i class="fas fa-store-slash"></i>
+                    <h3>No shops found nearby</h3>
+                    <p>We are expanding rapidly! Check back soon.</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</section>
+
+<%- include('partials/footer') %>

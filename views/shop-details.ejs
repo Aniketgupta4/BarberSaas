@@ -1,0 +1,76 @@
+<%- include('partials/header') %>
+
+<div class="container shop-details-page">
+    <div class="shop-banner">
+        <img src="<%= shop.bannerImage %>" alt="<%= shop.shopName %>" class="banner-img">
+        <div class="banner-overlay">
+            <div class="banner-content">
+                <span class="badge-open">Open Now</span>
+                <h1><%= shop.shopName %></h1>
+                <p><i class="fas fa-map-marker-alt"></i> <%= shop.address %></p>
+                <div class="shop-meta">
+                    <span><i class="far fa-clock"></i> <%= shop.openingTime %> - <%= shop.closingTime %></span>
+                    <span><i class="fas fa-star"></i> 4.8 (120+ Reviews)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="services-container">
+        <div class="section-title">
+            <h2>Select a Service</h2>
+            <p>Choose from our wide range of grooming services</p>
+        </div>
+
+        <div class="services-list">
+            <% if (services && services.length > 0) { %>
+                <% services.forEach(service => { %>
+                    <div class="service-card">
+                        <div class="service-main">
+                            <div class="service-img">
+                                <img src="<%= service.serviceImage %>" alt="<%= service.serviceName %>">
+                            </div>
+                            <div class="service-info">
+                                <h3><%= service.serviceName %></h3>
+                                <p><%= service.description %></p>
+                                <div class="service-tags">
+                                    <span class="tag-time"><i class="far fa-hourglass"></i> <%= service.duration %> Mins</span>
+                                    <span class="tag-price">₹<%= service.price %></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="service-action">
+                            <form action="/book" method="POST" class="booking-form">
+                                <input type="hidden" name="shopId" value="<%= shop._id %>">
+                                <input type="hidden" name="serviceId" value="<%= service._id %>">
+                                
+                                <div class="form-inputs">
+                                    <div class="input-group">
+                                        <label><i class="far fa-calendar"></i> Date</label>
+                                        <input type="date" name="bookingDate" required>
+                                    </div>
+                                    <div class="input-group">
+                                        <label><i class="far fa-clock"></i> Time</label>
+                                        <input type="time" name="bookingTime" required>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn-book-now">
+                                    Request Appointment <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <div class="empty-services">
+                    <i class="fas fa-cut"></i>
+                    <p>No services listed yet for this shop.</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

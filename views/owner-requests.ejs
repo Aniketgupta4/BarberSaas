@@ -1,0 +1,104 @@
+<%- include('partials/header') %>
+
+<div class="container admin-page" style="max-width: 1000px; margin: 0 auto; padding: 40px 20px;">
+    <div class="section-title-bar" style="margin-bottom: 30px;">
+        <div>
+            <h2 style="font-size: 2rem; color: #1e293b;">Booking Requests 📥</h2>
+            <p style="color: #64748b;">Manage your incoming customer appointments and schedules.</p>
+        </div>
+    </div>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="reschedule-alert" style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; margin-bottom: 25px;">
+            <i class="fas fa-exclamation-triangle"></i> <%= error %>
+        </div>
+    <% } %>
+
+    <div class="requests-list" style="display: flex; flex-direction: column; gap: 20px;">
+        <% if (appointments && appointments.length > 0) { %>
+            <% appointments.forEach(app => { %>
+                <div class="booking-item-card status-<%= app.status.toLowerCase() %>" style="padding: 0; overflow: hidden; border-left: none;">
+                    
+                    <div style="padding: 25px; display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap;">
+                        <div class="card-left" style="display: flex; gap: 20px;">
+                            <div class="user-avatar" style="width: 60px; height: 60px; font-size: 1.5rem; background: #f1f5f9; color: var(--primary);">
+                                <%= app.userId.name.charAt(0).toUpperCase() %>
+                            </div>
+                            <div class="main-info">
+                                <span class="status-pill" style="margin-bottom: 10px; display: inline-block;">
+                                    <%= app.status %>
+                                </span>
+                                <h3 style="font-size: 1.3rem; margin-bottom: 5px;"><%= app.serviceId.serviceName %></h3>
+                                <p style="color: #475569; font-weight: 600; margin-bottom: 5px;">
+                                    <i class="fas fa-user" style="margin-right: 8px; color: #94a3b8;"></i> <%= app.userId.name %>
+                                </p>
+                                <p style="color: var(--slate); font-size: 0.9rem;">
+                                    <i class="fas fa-phone-alt" style="margin-right: 8px; color: #94a3b8;"></i> <%= app.userId.phone %>
+                                </p>
+                                <div class="time-meta" style="margin-top: 15px; background: #f8fafc; padding: 10px 15px; border-radius: 8px; border: 1px solid #f1f5f9;">
+                                    <span style="margin-right: 20px;"><i class="far fa-calendar-check"></i> <%= new Date(app.bookingDate).toDateString() %></span>
+                                    <span><i class="far fa-clock"></i> <%= app.bookingTime %></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-right" style="text-align: right;">
+                            <h2 style="color: #059669; font-size: 1.8rem; margin-bottom: 10px;">₹<%= app.serviceId.price %></h2>
+                        </div>
+                    </div>
+
+                    <div style="background: #f8fafc; padding: 15px 25px; border-top: 1px solid #f1f5f9;">
+                        <form action="/owner/update-request" method="POST" id="form-<%= app._id %>" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                            <input type="hidden" name="appointmentId" value="<%= app._id %>">
+                            <input type="hidden" name="status" id="status-<%= app._id %>" value="">
+
+                            <button type="submit" onclick="document.getElementById('status-<%= app._id %>').value='Accepted'" class="btn-action-success">
+                                <i class="fas fa-check"></i> Accept
+                            </button>
+                            
+                            <button type="button" onclick="showReschedule('<%= app._id %>')" class="btn-action-warning">
+                                <i class="fas fa-history"></i> Reschedule
+                            </button>
+
+                            <button type="submit" onclick="document.getElementById('status-<%= app._id %>').value='Rejected'" class="btn-action-danger">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+
+                            <div id="reschedule-box-<%= app._id %>" class="reschedule-drawer" style="display: none;">
+                                <div style="display: flex; gap: 10px; align-items: center; background: white; padding: 8px; border-radius: 10px; border: 1px solid #e2e8f0; margin-left: auto;">
+                                    <input type="date" name="proposedDate" required class="mini-input">
+                                    <input type="time" name="proposedTime" required class="mini-input">
+                                    <button type="submit" onclick="document.getElementById('status-<%= app._id %>').value='Rescheduled'" class="btn-send-slot">
+                                        Send Slot <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <div style="text-align: center; padding: 80px 20px; background: white; border-radius: 16px; border: 2px dashed #e2e8f0;">
+                <img src="https://cdn-icons-png.flaticon.com/512/4076/4076402.png" style="width: 80px; opacity: 0.5; margin-bottom: 20px;">
+                <h3 style="color: #64748b;">No new requests found</h3>
+                <p style="color: #94a3b8;">Sit back and relax, your next customer is on the way!</p>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<script>
+    function showReschedule(id) {
+        const box = document.getElementById('reschedule-box-' + id);
+        // Toggle animation effect
+        if (box.style.display === 'none') {
+            box.style.display = 'flex';
+            box.style.opacity = '0';
+            setTimeout(() => { box.style.opacity = '1'; box.style.transition = '0.3s'; }, 10);
+        } else {
+            box.style.display = 'none';
+        }
+    }
+</script>
+
+<%- include('partials/footer') %>
