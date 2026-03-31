@@ -1,83 +1,137 @@
 <%- include('partials/header') %>
 
-<div class="container dashboard-page">
-    <div class="dashboard-header-flex">
-        <div class="user-profile-summary">
-            <div class="user-avatar-large">
-                <%= user.name.charAt(0).toUpperCase() %>
+<style>
+    .dashboard-page { padding: 40px 0; background: #f8fafc; min-height: 100vh; }
+    .dashboard-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 20px; }
+    .user-profile-summary { display: flex; align-items: center; gap: 20px; }
+    .user-avatar-large { width: 70px; height: 70px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 1.8rem; font-weight: 800; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
+    
+    .stats-container { display: flex; gap: 15px; }
+    .stat-card { background: white; padding: 15px 25px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center; }
+    .stat-card.highlighted { background: var(--primary); border-color: var(--primary); color: white; }
+    .stat-value { display: block; font-size: 1.5rem; font-weight: 800; }
+    .stat-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; opacity: 0.8; }
+
+    .section-title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    .btn-book-new { background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; }
+
+    /* Booking Cards */
+    .bookings-grid { display: flex; flex-direction: column; gap: 20px; }
+    .booking-item-card { background: white; border-radius: 16px; padding: 25px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #f1f5f9; position: relative; overflow: hidden; transition: 0.3s; }
+    .booking-item-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+    
+    /* Dynamic Borders based on Status */
+    .status-accepted { border-left: 6px solid #10b981; }
+    .status-pending { border-left: 6px solid #94a3b8; }
+    .status-rescheduled { border-left: 6px solid #f59e0b; }
+    .status-rejected { border-left: 6px solid #ef4444; }
+
+    .shop-icon-circle { width: 50px; height: 50px; background: #eff6ff; color: var(--primary); display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 1.2rem; }
+    .main-info h4 { font-size: 1.2rem; margin-bottom: 5px; }
+    .shop-name { color: var(--dark); font-weight: 600; font-size: 0.9rem; }
+    .shop-location { color: var(--slate); font-size: 0.85rem; margin-bottom: 10px; }
+    .time-meta { display: flex; gap: 15px; color: var(--slate); font-size: 0.85rem; font-weight: 500; }
+
+    .reschedule-box { margin-top: 15px; background: #fffbeb; border: 1px solid #fef3c7; padding: 12px; border-radius: 8px; color: #92400e; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; }
+    .btn-accept-new { background: #d97706; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-left: 10px; }
+
+    .card-right { text-align: right; }
+    .price-info { font-size: 1.6rem; font-weight: 800; color: #059669; }
+    .status-pill { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-top: 8px; }
+    
+    /* Pill Colors */
+    .pill-accepted { background: #d1fae5; color: #065f46; }
+    .pill-pending { background: #f1f5f9; color: #475569; }
+    .pill-rescheduled { background: #fef3c7; color: #92400e; }
+    .pill-rejected { background: #fee2e2; color: #991b1b; }
+</style>
+
+<div class="dashboard-page">
+    <div class="container">
+        <div class="dashboard-header-flex">
+            <div class="user-profile-summary">
+                <div class="user-avatar-large">
+                    <%= user.name.charAt(0).toUpperCase() %>
+                </div>
+                <div class="welcome-text">
+                    <h1>Welcome, <%= user.name %>! 👋</h1>
+                    <p>Track your appointments and grooming history.</p>
+                </div>
             </div>
-            <div class="welcome-text">
-                <h1>Welcome back, <%= user.name %>! 👋</h1>
-                <p>Manage your grooming schedule and track appointment status.</p>
+
+            <div class="stats-container">
+                <div class="stat-card">
+                    <span class="stat-value"><%= appointments.length %></span>
+                    <span class="stat-label">Bookings</span>
+                </div>
+                <div class="stat-card highlighted">
+                    <span class="stat-value">
+                        <%= appointments.filter(a => a.status === 'Accepted').length %>
+                    </span>
+                    <span class="stat-label">Confirmed</span>
+                </div>
             </div>
         </div>
 
-        <div class="stats-container">
-            <div class="stat-card">
-                <span class="stat-value"><%= appointments.length %></span>
-                <span class="stat-label">Total Bookings</span>
+        <div class="bookings-wrapper">
+            <div class="section-title-bar">
+                <h3><i class="fas fa-calendar-check"></i> Recent Appointments</h3>
+                <a href="/" class="btn-book-new">Book New Service <i class="fas fa-plus"></i></a>
             </div>
-            <div class="stat-card highlighted">
-                <span class="stat-value">
-                    <%= appointments.filter(a => a.status === 'Accepted').length %>
-                </span>
-                <span class="stat-label">Confirmed</span>
-            </div>
-        </div>
-    </div>
 
-    <div class="bookings-wrapper">
-        <div class="section-title-bar">
-            <h3><i class="fas fa-calendar-alt"></i> My Recent Bookings</h3>
-            <a href="/" class="btn-book-new">Find a Barber <i class="fas fa-plus"></i></a>
-        </div>
-
-        <div class="bookings-grid">
-            <% if (appointments && appointments.length > 0) { %>
-                <% appointments.forEach(app => { %>
-                    <div class="booking-item-card status-<%= app.status.toLowerCase() %>">
-                        <div class="card-left">
-                            <div class="shop-icon-circle">
-                                <i class="fas fa-cut"></i>
-                            </div>
-                            <div class="main-info">
-                                <h4><%= app.serviceId.serviceName %></h4>
-                                <p class="shop-name">🏪 <%= app.shopId.shopName %></p>
-                                <p class="shop-location"><i class="fas fa-map-marker-alt"></i> <%= app.shopId.address %></p>
-                                
-                                <div class="time-meta">
-                                    <span><i class="far fa-calendar"></i> <%= new Date(app.bookingDate).toDateString() %></span>
-                                    <span><i class="far fa-clock"></i> <%= app.bookingTime %></span>
+            <div class="bookings-grid">
+                <% if (appointments && appointments.length > 0) { %>
+                    <% appointments.forEach(app => { %>
+                        <div class="booking-item-card status-<%= app.status.toLowerCase() %>">
+                            <div style="display: flex; gap: 20px; align-items: flex-start;">
+                                <div class="shop-icon-circle">
+                                    <i class="fas fa-cut"></i>
                                 </div>
-
-                                <% if (app.status === 'Rescheduled' && app.proposedTime) { %>
-                                    <div class="reschedule-box">
-                                        <i class="fas fa-info-circle"></i>
-                                        <span>New suggested time: <strong><%= new Date(app.proposedDate).toDateString() %></strong> at <strong><%= app.proposedTime %></strong></span>
+                                <div class="main-info">
+                                    <h4><%= app.serviceId.serviceName %></h4>
+                                    <p class="shop-name">🏪 <%= app.shopId.shopName %></p>
+                                    <p class="shop-location"><i class="fas fa-map-marker-alt"></i> <%= app.shopId.address %></p>
+                                    
+                                    <div class="time-meta">
+                                        <span><i class="far fa-calendar"></i> <%= new Date(app.bookingDate).toDateString() %></span>
+                                        <span><i class="far fa-clock"></i> <%= app.bookingTime %></span>
                                     </div>
+
+                                    <% if (app.status === 'Rescheduled' && app.proposedTime) { %>
+                                        <div class="reschedule-box">
+                                            <i class="fas fa-info-circle"></i>
+                                            <span>
+                                                Suggested: <strong><%= new Date(app.proposedDate).toDateString() %></strong> at <strong><%= app.proposedTime %></strong>
+                                            </span>
+                                            <form action="/user/confirm-reschedule" method="POST" style="display:inline;">
+                                                <input type="hidden" name="appointmentId" value="<%= app._id %>">
+                                                <button type="submit" class="btn-accept-new">Accept Time</button>
+                                            </form>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+
+                            <div class="card-right">
+                                <div class="price-info">₹<%= app.serviceId.price %></div>
+                                <div class="status-pill pill-<%= app.status.toLowerCase() %>">
+                                    <%= app.status %>
+                                </div>
+                                <% if (app.status === 'Accepted') { %>
+                                    <div style="color: #059669; font-size: 0.75rem; font-weight: 700; margin-top: 5px;">Confirmed! See you soon.</div>
                                 <% } %>
                             </div>
                         </div>
-
-                        <div class="card-right">
-                            <div class="price-info">₹<%= app.serviceId.price %></div>
-                            <div class="status-pill">
-                                <%= app.status %>
-                            </div>
-                            <% if (app.status === 'Accepted') { %>
-                                <small class="note">See you soon!</small>
-                            <% } %>
-                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <div style="text-align: center; padding: 60px; background: white; border-radius: 20px; border: 2px dashed #e2e8f0;">
+                        <img src="https://cdn-icons-png.flaticon.com/512/4076/4076402.png" style="width: 80px; opacity: 0.5; margin-bottom: 20px;">
+                        <h3>No bookings yet</h3>
+                        <p>Book your first haircut and look your best!</p>
+                        <a href="/" class="btn-book-new" style="display: inline-block; margin-top: 15px;">Browse Shops</a>
                     </div>
-                <% }) %>
-            <% } else { %>
-                <div class="empty-bookings">
-                    <img src="https://cdn-icons-png.flaticon.com/512/4076/4076402.png" alt="No Bookings">
-                    <h3>No appointments found</h3>
-                    <p>Looks like you haven't booked anything yet. Ready for a makeover?</p>
-                    <a href="/" class="btn-primary">Browse Top Barbers</a>
-                </div>
-            <% } %>
+                <% } %>
+            </div>
         </div>
     </div>
 </div>

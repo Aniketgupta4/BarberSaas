@@ -15,8 +15,8 @@ router.post('/add-employee', ownerController.addEmployee);
 
 // Manage Booking Requests
 router.get('/requests', ownerController.getOwnerRequests);
-router.post('/update-request', ownerController.updateAppointmentStatus);
-
+// routes/ownerRoutes.js
+router.post('/update-request', ownerController.updateRequest);
 
 router.get('/dashboard', ownerController.getOwnerDashboard);
 router.get('/manage', ownerController.getOwnerManage);

@@ -163,30 +163,28 @@ exports.getOwnerRequests = async (req, res) => {
     }
 };
 
-// 6. Handle Appointment Status Update (Accept, Reject, or Reschedule)
-exports.updateAppointmentStatus = async (req, res) => {
+// 6. Handle Appointment Status Update (Iska naam updateRequest kar diya taaki route se match kare)
+exports.updateRequest = async (req, res) => {
     try {
         const { appointmentId, status, proposedDate, proposedTime } = req.body;
         
-        const appointment = await Appointment.findById(appointmentId);
-        if (!appointment) return res.status(404).send("Appointment not found");
+        console.log("Data Received:", req.body); // Terminal mein check karo ye dikh raha hai ya nahi
 
-        appointment.status = status; // 'Accepted', 'Rejected', or 'Rescheduled'
-        
-        // Agar reschedule kiya hai, toh naya date/time save karo
-        if (status === 'Rescheduled') {
-            appointment.proposedDate = proposedDate;
-            appointment.proposedTime = proposedTime;
+        const updateData = { status: status };
+
+        if (status === 'Rescheduled' && proposedDate && proposedTime) {
+            updateData.bookingDate = proposedDate;
+            updateData.bookingTime = proposedTime;
         }
 
-        await appointment.save();
-        res.redirect('/owner/requests');
+        await Appointment.findByIdAndUpdate(appointmentId, updateData);
+        
+        res.redirect('/owner/requests'); // Page refresh ho jayega update ke sath
     } catch (error) {
-        console.error("Update Status Error:", error);
-        res.status(400).send("Error updating appointment status");
+        console.error(error);
+        res.status(500).send("Error updating");
     }
 };
-
 
 
 // controllers/ownerController.js mein ye function add karo

@@ -1,273 +1,202 @@
 <%- include('partials/header') %>
 
 <style>
-    /* Admin Specific Styling */
-    .admin-page { padding: 40px 20px; }
+:root {
+    --primary: #3b82f6;
+    --secondary: #10b981;
+    --dark: #0f172a;
+    --slate: #64748b;
+    --danger: #ef4444;
+}
 
-    .admin-stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 25px;
-        margin-bottom: 40px;
-    }
+body { margin: 0; padding: 0; background: #f1f5f9; font-family: 'Inter', system-ui, sans-serif; }
 
-    .stat-card {
-        background: white;
-        padding: 25px;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        border: 1px solid #f1f5f9;
-    }
+.admin-page { padding: 15px; max-width: 1300px; margin: auto; }
 
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-    }
+/* 📊 Stats Section */
+.admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
 
-    .stat-info h3 { font-size: 1.8rem; margin: 0; color: var(--dark); }
-    .stat-info p { color: var(--slate); font-size: 0.9rem; margin: 0; }
+.stat-card {
+    background: white;
+    padding: 12px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #e2e8f0;
+}
 
-    .admin-main-grid {
-        display: grid;
-        grid-template-columns: 1fr 2.2fr;
-        gap: 30px;
-    }
+.stat-icon { width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.stat-info h3 { font-size: 1.1rem; margin: 0; }
+.stat-info p { font-size: 0.7rem; color: var(--slate); margin: 0; font-weight: 600; }
 
-    .admin-card {
-        background: white;
-        border-radius: 16px;
-        padding: 30px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        border: 1px solid #f1f5f9;
-    }
+/* 🏗 Main Layout */
+.admin-main-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
 
-    .card-header { margin-bottom: 25px; }
-    .card-header h3 { font-size: 1.3rem; margin-bottom: 5px; color: var(--dark); }
-    .card-header p { font-size: 0.9rem; color: var(--slate); }
+@media (min-width: 1024px) {
+    .admin-main-grid { grid-template-columns: 320px 1fr; }
+}
 
-    /* Table Styling */
-    .table-responsive { overflow-x: auto; }
-    .admin-table { width: 100%; border-collapse: collapse; min-width: 600px; }
-    .admin-table th {
-        background: #f8fafc;
-        padding: 15px;
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        color: var(--slate);
-        font-weight: 700;
-        text-align: left;
-    }
-    .admin-table td { padding: 15px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+.admin-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; }
+.admin-card h3 { font-size: 1.1rem; margin-bottom: 15px; color: var(--dark); border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
 
-    .owner-cell { display: flex; flex-direction: column; gap: 4px; }
-    .owner-cell strong { color: var(--dark); font-size: 0.95rem; }
-    .owner-cell .sub-text { font-size: 0.8rem; color: var(--slate); }
-    .owner-cell .phone-tag { font-size: 0.8rem; color: var(--primary); font-weight: 600; }
+/* 📝 Compact Form */
+.input-wrapper { position: relative; margin-bottom: 12px; }
+.input-wrapper input {
+    width: 100%;
+    padding: 10px 10px 10px 35px;
+    border-radius: 8px;
+    border: 1.5px solid #e2e8f0;
+    font-size: 0.9rem;
+    outline: none;
+}
+.input-wrapper input:focus { border-color: var(--primary); }
+.input-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--slate); font-size: 0.8rem; }
 
-    .status-pill {
-        padding: 5px 12px;
-        border-radius: 6px;
-        font-size: 0.75rem;
-        font-weight: 700;
-    }
-    .status-pill.active { background: #d1fae5; color: #065f46; }
-    .status-pill.expired { background: #fee2e2; color: #991b1b; }
+.btn-admin-submit {
+    width: 100%;
+    padding: 12px;
+    background: var(--secondary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
 
-    .btn-renew {
-        background: var(--primary);
-        color: white;
-        border: none;
-        padding: 8px 15px;
-        border-radius: 6px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: 0.3s;
-    }
-    .btn-renew:hover { background: var(--primary-dark); transform: scale(1.05); }
+/* 📊 Responsive Table */
+.table-responsive { overflow-x: auto; border-radius: 8px; }
+.admin-table { width: 100%; border-collapse: collapse; }
+.admin-table th { background: #f8fafc; padding: 12px 10px; text-align: left; font-size: 0.7rem; text-transform: uppercase; color: var(--slate); font-weight: 700; border-bottom: 2px solid #edf2f7; }
+.admin-table td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
 
-    /* 🔢 Pagination Styling */
-    .pagination-wrapper {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px solid #f1f5f9;
-    }
-    .pagination-info { font-size: 0.85rem; color: var(--slate); }
-    .pagination-controls { display: flex; gap: 8px; }
-    .page-link {
-        text-decoration: none;
-        padding: 8px 14px;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        color: var(--dark);
-        font-size: 0.85rem;
-        font-weight: 600;
-        transition: 0.3s;
-        background: white;
-    }
-    .page-link:hover { border-color: var(--primary); color: var(--primary); }
-    .page-link.active { background: var(--primary); color: white; border-color: var(--primary); }
+.status-badge { padding: 4px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 800; }
+.status-active { background: #d1fae5; color: #065f46; }
+.status-expired { background: #fee2e2; color: #991b1b; }
 
-    /* Responsive */
-    @media (max-width: 1100px) {
-        .admin-main-grid { grid-template-columns: 1fr; }
-    }
+.btn-renew {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+/* 🔥 Mobile View: Table to Cards */
+@media (max-width: 650px) {
+    .admin-table thead { display: none; }
+    .admin-table, .admin-table tbody, .admin-table tr, .admin-table td { display: block; width: 100%; }
+    .admin-table tr { margin-bottom: 15px; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; background: #fff; }
+    .admin-table td { display: flex; justify-content: space-between; align-items: center; padding: 8px 5px; border: none; border-bottom: 1px dashed #f1f5f9; }
+    .admin-table td:last-child { border-bottom: none; }
+    .admin-table td::before { content: attr(data-label); font-weight: 800; color: var(--slate); font-size: 0.75rem; text-transform: uppercase; }
+}
 </style>
 
-<div class="container admin-page">
+<div class="admin-page">
     <div class="admin-stats-grid">
         <div class="stat-card">
-            <div class="stat-icon" style="background: #e0f2fe; color: #0ea5e9;"><i class="fas fa-users"></i></div>
+            <div class="stat-icon" style="background:#e0f2fe; color:#0ea5e9;"><i class="fas fa-users"></i></div>
             <div class="stat-info">
-                <h3><%= totalOwners %></h3>
-                <p>Total Owners</p>
+                <h3><%= typeof totalOwners !== 'undefined' ? totalOwners : 0 %></h3>
+                <p>OWNERS</p>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon" style="background: #dcfce7; color: #22c55e;"><i class="fas fa-store"></i></div>
+            <div class="stat-icon" style="background:#dcfce7; color:#22c55e;"><i class="fas fa-store"></i></div>
             <div class="stat-info">
                 <h3><%= typeof totalShops !== 'undefined' ? totalShops : 0 %></h3>
-                <p>Setup Shops</p>
+                <p>SHOPS</p>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon" style="background: #fef3c7; color: #d97706;"><i class="fas fa-calendar-check"></i></div>
+            <div class="stat-icon" style="background:#fef3c7; color:#d97706;"><i class="fas fa-calendar-check"></i></div>
             <div class="stat-info">
                 <h3><%= typeof totalBookings !== 'undefined' ? totalBookings : 0 %></h3>
-                <p>Platform Bookings</p>
+                <p>BOOKINGS</p>
             </div>
         </div>
     </div>
 
     <div class="admin-main-grid">
-        <div class="admin-card form-card">
-            <div class="card-header">
-                <h3>Add New Barber Owner ➕</h3>
-                <p>Register a new partner on the platform</p>
-            </div>
-            <form action="/admin/add-owner" method="POST" class="admin-form">
-                <div class="form-group">
-                    <label>Owner Full Name</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-user-tie"></i>
-                        <input type="text" name="name" placeholder="Aniket Gupta" required>
-                    </div>
+        <div class="admin-card">
+            <h3>New Partner ➕</h3>
+            <form action="/admin/add-owner" method="POST">
+                <div class="input-wrapper">
+                    <i class="fas fa-user"></i>
+                    <input type="text" name="name" placeholder="Full Name" required>
                 </div>
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-envelope"></i>
-                        <input type="email" name="email" placeholder="aniket@example.com" required>
-                    </div>
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" name="email" placeholder="Email Address" required>
                 </div>
-                <div class="form-group">
-                    <label>Phone Number</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-phone"></i>
-                        <input type="text" name="phone" placeholder="+91 98XXX XXXXX" required>
-                    </div>
+                <div class="input-wrapper">
+                    <i class="fas fa-phone"></i>
+                    <input type="text" name="phone" placeholder="Phone Number" required>
                 </div>
-                <div class="form-group">
-                    <label>Temporary Password</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-key"></i>
-                        <input type="text" name="password" placeholder="Create strong password" required>
-                    </div>
+                <div class="input-wrapper">
+                    <i class="fas fa-key"></i>
+                    <input type="password" name="password" placeholder="Password" required>
                 </div>
-                <button type="submit" class="btn-admin-submit" style="width: 100%; border:none; border-radius:10px; padding:15px; background: #10b981; color:white; font-weight:bold; cursor:pointer;">
-                    Register Partner <i class="fas fa-paper-plane" style="margin-left: 8px;"></i>
-                </button>
+                <button type="submit" class="btn-admin-submit">Register Partner</button>
             </form>
         </div>
 
-        <div class="admin-card table-card">
-            <div class="card-header">
-                <h3>Registered Barber Shops 🏬</h3>
-                <p>Viewing active and expired subscriptions</p>
-            </div>
-            
+        <div class="admin-card">
+            <h3>Registered Partners 🏬</h3>
             <div class="table-responsive">
                 <table class="admin-table">
                     <thead>
                         <tr>
-                            <th>Owner Details</th>
+                            <th>Partner Details</th>
                             <th>Status</th>
-                            <th>Plan Ends</th>
-                            <th style="text-align: center;">Actions</th>
+                            <th>Expiry Date</th>
+                            <th style="text-align: center;">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <% if (owners.length > 0) { %>
+                        <% if (owners && owners.length > 0) { %>
                             <% owners.forEach(owner => { %>
                                 <tr>
-                                    <td>
-                                        <div class="owner-cell">
-                                            <strong><%= owner.name %></strong>
-                                            <span class="sub-text"><i class="far fa-envelope"></i> <%= owner.email %></span>
-                                            <span class="phone-tag"><i class="fas fa-phone-alt"></i> <%= owner.phone || 'N/A' %></span>
-                                        </div>
+                                    <td data-label="Partner">
+                                        <div style="font-weight: 700; color: var(--dark);"><%= owner.name %></div>
+                                        <div style="font-size: 0.75rem; color: var(--slate);"><%= owner.email %></div>
                                     </td>
-                                    <td>
-                                        <% if (owner.isActive) { %>
-                                            <span class="status-pill active">Active</span>
-                                        <% } else { %>
-                                            <span class="status-pill expired">Expired</span>
-                                        <% } %>
-                                    </td>
-                                    <td>
-                                        <span class="date-text" style="font-size: 0.85rem; font-weight:600; color:#475569;">
-                                            <%= owner.subscriptionEnd ? owner.subscriptionEnd.toDateString() : 'No Plan' %>
+                                    <td data-label="Status">
+                                        <span class="status-badge <%= owner.isActive ? 'status-active' : 'status-expired' %>">
+                                            <%= owner.isActive ? 'ACTIVE' : 'EXPIRED' %>
                                         </span>
                                     </td>
-                                    <td style="text-align: center;">
-                                        <form action="/admin/renew-subscription/<%= owner._id %>" method="POST">
+                                    <td data-label="Expiry">
+                                        <span style="font-weight: 600;"><%= owner.subscriptionEnd ? owner.subscriptionEnd.toDateString() : 'No Plan' %></span>
+                                    </td>
+                                    <td data-label="Action" style="text-align: center;">
+                                        <form action="/admin/renew-subscription/<%= owner._id %>" method="POST" style="display:inline;">
                                             <button type="submit" class="btn-renew">Renew 🔄</button>
                                         </form>
                                     </td>
                                 </tr>
                             <% }) %>
                         <% } else { %>
-                            <tr>
-                                <td colspan="4" style="text-align:center; padding:40px; color:var(--slate);">No owners found.</td>
-                            </tr>
+                            <tr><td colspan="4" style="text-align: center; color: var(--slate);">No partners found.</td></tr>
                         <% } %>
                     </tbody>
                 </table>
             </div>
-
-            <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
-                <div class="pagination-wrapper">
-                    <div class="pagination-info">
-                        Page <strong><%= currentPage %></strong> of <%= totalPages %>
-                    </div>
-                    <div class="pagination-controls">
-                        <% if (currentPage > 1) { %>
-                            <a href="/admin/dashboard?page=<%= currentPage - 1 %>" class="page-link"><i class="fas fa-chevron-left"></i></a>
-                        <% } %>
-
-                        <% for(let i = 1; i <= totalPages; i++) { %>
-                            <a href="/admin/dashboard?page=<%= i %>" class="page-link <%= currentPage == i ? 'active' : '' %>">
-                                <%= i %>
-                            </a>
-                        <% } %>
-
-                        <% if (currentPage < totalPages) { %>
-                            <a href="/admin/dashboard?page=<%= currentPage + 1 %>" class="page-link"><i class="fas fa-chevron-right"></i></a>
-                        <% } %>
-                    </div>
-                </div>
-            <% } %>
         </div>
     </div>
 </div>

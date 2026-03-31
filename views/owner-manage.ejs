@@ -1,14 +1,13 @@
 <%- include('partials/header') %>
 
-<div class="container dashboard-page" style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
-    
-    <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 20px 30px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #f1f5f9;">
+<div class="container admin-page">
+    <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 20px 30px; border-radius: 16px; margin-bottom: 30px; box-shadow: var(--shadow); border: 1px solid #f1f5f9;">
         <div class="header-text">
-            <h2 style="margin: 0; color: #1e293b; font-size: 1.8rem;">Shop Management Dashboard 🛠️</h2>
-            <p style="margin: 5px 0 0 0; color: #64748b; font-size: 0.9rem;">Configure your salon, services, and staff team.</p>
+            <h2 style="margin: 0; color: var(--dark); font-size: 1.8rem;">Shop Configuration 🛠️</h2>
+            <p style="margin: 5px 0 0 0; color: var(--slate); font-size: 0.9rem;">Manage your profile, services, and staff team.</p>
         </div>
-        <a href="/owner/requests" class="btn-auth" style="padding: 12px 25px; text-decoration: none; width: auto; font-size: 0.9rem;">
-            <i class="fas fa-calendar-check" style="margin-right: 8px;"></i> View Bookings
+        <a href="/owner/requests" class="btn-auth" style="padding: 12px 25px; width: auto; font-size: 0.9rem; background: var(--secondary);">
+            <i class="fas fa-calendar-check"></i> View Bookings
         </a>
     </div>
 
@@ -24,10 +23,10 @@
         </button>
     </div>
 
-    <div id="setup" class="tab-content-box">
-        <div class="card-header" style="margin-bottom: 25px;">
-            <h3>Salon Configuration</h3>
-            <p>Update your shop's primary information and location.</p>
+    <div id="setup" class="tab-content-box admin-card">
+        <div class="card-header">
+            <h3>Salon Information</h3>
+            <p>Update your shop's primary details and location.</p>
         </div>
         <form action="/owner/setup-shop" method="POST" enctype="multipart/form-data" class="admin-form">
             <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
@@ -63,14 +62,14 @@
                     <label>Longitude</label>
                     <div class="input-wrapper">
                         <i class="fas fa-location-arrow"></i>
-                        <input type="text" name="longitude" value="<%= shop ? shop.location.coordinates[0] : '' %>" required>
+                        <input type="text" name="longitude" value="<%= (shop && shop.location) ? shop.location.coordinates[0] : '' %>" required>
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Latitude</label>
                     <div class="input-wrapper">
                         <i class="fas fa-map-pin"></i>
-                        <input type="text" name="latitude" value="<%= shop ? shop.location.coordinates[1] : '' %>" required>
+                        <input type="text" name="latitude" value="<%= (shop && shop.location) ? shop.location.coordinates[1] : '' %>" required>
                     </div>
                 </div>
                 <div class="form-group" style="grid-column: 1 / -1;">
@@ -83,50 +82,49 @@
                 <div class="form-group" style="grid-column: 1 / -1;">
                     <label>Shop Banner Image</label>
                     <div class="input-wrapper" style="padding: 10px; border: 1.5px dashed #e2e8f0; border-radius: 10px;">
-                        <input type="file" name="bannerImage" style="border: none; padding: 0;">
+                        <input type="file" name="bannerImage">
                     </div>
                 </div>
             </div>
-            <button type="submit" class="btn-auth" style="margin-top: 30px; width: auto; padding: 15px 40px;">
-                Save Shop Details <i class="fas fa-save" style="margin-left: 10px;"></i>
+            <button type="submit" class="btn-auth" style="margin-top: 20px; width: auto; padding: 12px 40px;">
+                Update Profile <i class="fas fa-save"></i>
             </button>
         </form>
     </div>
 
-    <div id="services" class="tab-content-box" style="display:none;">
-        <div class="card-header" style="margin-bottom: 25px;">
+    <div id="services" class="tab-content-box admin-card" style="display:none;">
+        <div class="card-header">
             <h3>Add New Service ✂️</h3>
-            <p>List a new grooming service for your customers.</p>
         </div>
-        <form action="/owner/add-service" method="POST" enctype="multipart/form-data" class="compact-form" style="margin-bottom: 40px;">
-            <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                <input type="text" name="serviceName" placeholder="Service Name (e.g. Haircut)" required>
-                <input type="number" name="price" placeholder="Price (₹)" required>
-                <input type="number" name="duration" placeholder="Duration (Mins)" required>
-                <input type="text" name="description" placeholder="Description" style="grid-column: span 2;">
+        <form action="/owner/add-service" method="POST" enctype="multipart/form-data" class="admin-form" style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <input type="text" name="serviceName" placeholder="Service Name" required class="input-field-custom">
+                <input type="number" name="price" placeholder="Price (₹)" required class="input-field-custom">
+                <input type="number" name="duration" placeholder="Duration (Mins)" required class="input-field-custom">
+                <input type="text" name="description" placeholder="Short description..." style="grid-column: span 2;" class="input-field-custom">
                 <input type="file" name="serviceImage">
             </div>
-            <button type="submit" class="btn-auth" style="margin-top: 15px; width: auto;">Add Service <i class="fas fa-plus"></i></button>
+            <button type="submit" class="btn-auth" style="margin-top: 15px; width: auto;">➕ Add Service</button>
         </form>
 
-        <h4 style="border-left: 4px solid var(--primary); padding-left: 15px; color: var(--dark); margin-bottom: 20px;">Current Service Menu</h4>
+        <h4 style="border-left: 4px solid var(--primary); padding-left: 15px; margin-bottom: 20px;">Live Menu</h4>
         <div class="table-responsive">
             <table class="admin-table">
                 <thead>
                     <tr>
                         <th>Image</th>
-                        <th>Service Name</th>
+                        <th>Name</th>
                         <th>Price</th>
-                        <th>Duration</th>
+                        <th>Time</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% services.forEach(service => { %>
                         <tr>
-                            <td><img src="<%= service.serviceImage %>" width="50" height="50" style="border-radius: 8px; object-fit: cover;"></td>
+                            <td><img src="<%= service.serviceImage %>" width="45" height="45" style="border-radius: 8px; object-fit: cover;"></td>
                             <td style="font-weight: 600;"><%= service.serviceName %></td>
-                            <td style="color: #27ae60; font-weight: bold;">₹<%= service.price %></td>
-                            <td><span class="tag-time"><%= service.duration %> mins</span></td>
+                            <td style="color: var(--secondary); font-weight: bold;">₹<%= service.price %></td>
+                            <td><span class="status-pill pending"><%= service.duration %> mins</span></td>
                         </tr>
                     <% }) %>
                 </tbody>
@@ -134,45 +132,35 @@
         </div>
     </div>
 
-    <div id="employees" class="tab-content-box" style="display:none;">
-        <div class="card-header" style="margin-bottom: 25px;">
-            <h3>Add Staff Member 🧑‍🎨</h3>
-            <p>Onboard your barbers and stylists to the platform.</p>
+    <div id="employees" class="tab-content-box admin-card" style="display:none;">
+        <div class="card-header">
+            <h3>Onboard New Staff 🧑‍🎨</h3>
         </div>
-        <form action="/owner/add-employee" method="POST" class="compact-form" style="margin-bottom: 40px;">
-            <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                <input type="text" name="name" placeholder="Staff Name" required>
-                <input type="text" name="specialty" placeholder="Specialty (e.g. Master Stylist)" required>
-                <input type="text" name="phone" placeholder="Phone Number" required>
-                
-                <select name="isAvailable" style="padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; background: white;">
-                    <option value="true">Active & Available ✅</option>
-                    <option value="false">On Leave / Away ❌</option>
+        <form action="/owner/add-employee" method="POST" class="admin-form" style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <input type="text" name="name" placeholder="Full Name" required class="input-field-custom">
+                <input type="text" name="specialty" placeholder="e.g. Beard Specialist" required class="input-field-custom">
+                <input type="text" name="phone" placeholder="Contact No" required class="input-field-custom">
+                <select name="isAvailable" class="input-field-custom">
+                    <option value="true">Available Now ✅</option>
+                    <option value="false">On Leave ❌</option>
                 </select>
             </div>
-            <button type="submit" class="btn-auth" style="margin-top: 15px; width: auto; background: #27ae60;">Add Staff <i class="fas fa-user-plus"></i></button>
+            <button type="submit" class="btn-auth" style="margin-top: 15px; width: auto; background: var(--secondary);">➕ Add Member</button>
         </form>
 
-        <h4 style="border-left: 4px solid #27ae60; padding-left: 15px; color: var(--dark); margin-bottom: 20px;">Our Team</h4>
+        <h4 style="border-left: 4px solid var(--secondary); padding-left: 15px; margin-bottom: 20px;">Current Team</h4>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
             <% employees.forEach(emp => { %>
-                <div class="booking-item-card" style="margin-bottom: 0; position: relative; border-left: 6px solid <%= emp.isAvailable ? '#27ae60' : '#e74c3c' %>;">
-                    <div style="position: absolute; top: 15px; right: 15px;">
-                        <span class="status-pill" style="background: <%= emp.isAvailable ? '#d1fae5' : '#fee2e2' %>; color: <%= emp.isAvailable ? '#065f46' : '#991b1b' %>;">
-                            <%= emp.isAvailable ? 'Available' : 'Away' %>
-                        </span>
-                    </div>
-                    
-                    <div class="card-left" style="gap: 15px;">
-                        <div class="shop-icon-circle" style="background: #f1f5f9; color: #475569;">
-                            <i class="fas fa-user-tie"></i>
-                        </div>
-                        <div class="main-info">
-                            <h4 style="margin: 0; font-size: 1.1rem;"><%= emp.name %></h4>
-                            <p style="margin: 4px 0; color: var(--primary); font-size: 0.85rem; font-weight: 700;">✨ <%= emp.specialty %></p>
-                            <p style="margin: 8px 0 0 0; color: var(--slate); font-size: 0.8rem;">
-                                <i class="fas fa-phone-alt"></i> <%= emp.phone || 'No Phone' %>
-                            </p>
+                <div class="admin-card" style="border-left: 6px solid <%= emp.isAvailable ? '#10b981' : '#ef4444' %>;">
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <div class="stat-icon" style="background: #f1f5f9; color: var(--slate);"><i class="fas fa-user-tie"></i></div>
+                        <div>
+                            <h4 style="margin: 0;"><%= emp.name %></h4>
+                            <p style="margin: 2px 0; color: var(--primary); font-size: 0.8rem; font-weight: 700;"><%= emp.specialty %></p>
+                            <span class="status-pill <%= emp.isAvailable ? 'active' : 'expired' %>">
+                                <%= emp.isAvailable ? 'Active' : 'Away' %>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -182,86 +170,29 @@
 </div>
 
 <style>
-    .tab-content-box {
-        background: white;
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-        border: 1px solid #f1f5f9;
-    }
-
+    /* 🎨 Component Specific Styles */
     .tab-btn-modern {
-        padding: 12px 24px;
-        border-radius: 10px;
-        border: 1px solid #e2e8f0;
-        background: white;
-        color: #64748b;
-        font-weight: 600;
-        cursor: pointer;
-        transition: 0.3s;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        white-space: nowrap;
+        padding: 12px 24px; border-radius: 10px; border: 1px solid #e2e8f0;
+        background: white; color: var(--slate); font-weight: 600; cursor: pointer;
+        transition: var(--transition); display: flex; align-items: center; gap: 8px;
     }
-
-    .tab-btn-modern:hover {
-        background: #f8fafc;
-        border-color: var(--primary);
-        color: var(--primary);
-    }
-
-    .active-tab {
-        background: var(--primary);
-        color: white;
-        border-color: var(--primary);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-    }
+    .active-tab { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2); }
     
-    .active-tab:hover {
-        background: var(--primary-dark);
-        color: white;
+    .input-field-custom {
+        padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 10px;
+        font-size: 0.9rem; font-family: inherit; outline: none;
     }
-
-    .compact-form input {
-        padding: 12px;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 8px;
-        font-family: inherit;
-        transition: 0.3s;
-    }
-    
-    .compact-form input:focus {
-        border-color: var(--primary);
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-    
-    .tag-time {
-        background: #f1f5f9;
-        color: #475569;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 0.75rem;
-        font-weight: 700;
-    }
+    .input-field-custom:focus { border-color: var(--primary); }
 </style>
 
 <script>
     function openTab(tabName) {
-        // Hide all tab contents
         const contents = document.getElementsByClassName("tab-content-box");
-        for (let i = 0; i < contents.length; i++) {
-            contents[i].style.display = "none";
-        }
+        for (let i = 0; i < contents.length; i++) { contents[i].style.display = "none"; }
         
-        // Deactivate all buttons
         const buttons = document.getElementsByClassName("tab-btn-modern");
-        for (let i = 0; i < buttons.length; i++) {
-            buttons[i].classList.remove("active-tab");
-        }
+        for (let i = 0; i < buttons.length; i++) { buttons[i].classList.remove("active-tab"); }
         
-        // Show current tab & activate button
         document.getElementById(tabName).style.display = "block";
         document.getElementById('btn-' + tabName).classList.add("active-tab");
     }
