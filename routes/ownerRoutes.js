@@ -21,4 +21,9 @@ router.post('/update-request', ownerController.updateRequest);
 router.get('/dashboard', ownerController.getOwnerDashboard);
 router.get('/manage', ownerController.getOwnerManage);
 
+// Employee delete karne ka route
+router.post('/delete-employee/:id', ownerController.deleteEmployee);
+
+router.post('/delete-service/:id', ownerController.deleteService);
+
 module.exports = router;

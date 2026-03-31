@@ -210,3 +210,42 @@ exports.getOwnerDashboard = async (req, res) => {
         res.status(500).send("Server Error");
     }
 };
+
+
+
+// Employee Delete karne ka function
+exports.deleteEmployee = async (req, res) => {
+    try {
+        const employeeId = req.params.id;
+        
+        // Check karo ki ye employee exist karta hai
+        await Employee.findByIdAndDelete(employeeId);
+        
+        console.log("Employee Deleted Successfully! 🗑️");
+        res.redirect('/owner/manage');
+    } catch (error) {
+        console.error("Delete Employee Error:", error);
+        res.status(500).send("Internal Server Error: Staff delete nahi ho paya.");
+    }
+};
+
+
+
+// controllers/ownerController.js
+
+exports.deleteService = async (req, res) => {
+    try {
+        const serviceId = req.params.id; // URL se ID nikalo
+        
+        // Database se delete karo
+        await Service.findByIdAndDelete(serviceId);
+        
+        console.log("Service Deleted Successfully! ✂️🗑️");
+        
+        // Wapas management page par bhej do
+        res.redirect('/owner/manage'); 
+    } catch (error) {
+        console.error("Delete Service Error:", error);
+        res.status(500).send("Server Error: Service delete nahi ho payi.");
+    }
+};
