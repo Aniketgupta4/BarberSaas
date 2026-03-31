@@ -1,66 +1,115 @@
 <%- include('partials/header') %>
 
 <style>
-    .requests-container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
-    .booking-item-card { 
-        background: white; border-radius: 16px; margin-bottom: 20px; 
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; 
-        border: 1px solid #f1f5f9; transition: 0.3s;
+    :root {
+        --glass: rgba(255, 255, 255, 0.8);
+        --border: #e2e8f0;
     }
-    /* Status Border Logic */
+    .requests-container { max-width: 1000px; margin: 40px auto; padding: 0 20px; min-height: 70vh; }
+    
+    .booking-item-card { 
+        background: white; border-radius: 20px; margin-bottom: 25px; 
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); overflow: hidden; 
+        border: 1px solid var(--border); transition: 0.3s;
+    }
+    .booking-item-card:hover { transform: translateY(-5px); box-shadow: 0 20px 30px -10px rgba(0,0,0,0.1); }
+
+    /* 🚥 Status Indicators */
     .status-accepted { border-left: 8px solid #10b981; }
-    .status-pending { border-left: 8px solid #94a3b8; }
+    .status-pending { border-left: 8px solid #3b82f6; }
     .status-rejected { border-left: 8px solid #ef4444; }
     .status-rescheduled { border-left: 8px solid #f59e0b; }
 
-    .btn-action-success { background: #10b981; color: white; border: none; padding: 10px 22px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-    .btn-action-warning { background: #f59e0b; color: white; border: none; padding: 10px 22px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-    .btn-action-danger { background: #ef4444; color: white; border: none; padding: 10px 22px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-    .btn-action-success:hover { background: #059669; }
+    .btn-action-success { background: #10b981; color: white; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    .btn-action-warning { background: #f59e0b; color: white; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    .btn-action-danger { background: #fee2e2; color: #ef4444; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
     
-    .res-drawer { display: none; margin-top: 15px; padding: 15px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1; }
-    .mini-input { padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-family: inherit; }
+    .btn-action-success:hover { background: #059669; transform: scale(1.05); }
+    .btn-action-danger:hover { background: #ef4444; color: white; }
+
+    .res-drawer { display: none; margin-top: 15px; padding: 20px; background: #f8fafc; border-radius: 15px; border: 2px dashed #cbd5e1; animation: slideDown 0.3s ease; }
+    .mini-input { padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-weight: 600; }
+
+    .avatar-circle {
+        width: 60px; height: 60px; background: linear-gradient(135deg, #60a5fa, #3b82f6); 
+        color: white; border-radius: 16px; display: flex; align-items: center; 
+        justify-content: center; font-weight: 800; font-size: 1.4rem; box-shadow: 0 4px 10px rgba(59,130,246,0.3);
+    }
+
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 600px) {
+        .card-main-flex { flex-direction: column; align-items: flex-start !important; }
+        .action-form { justify-content: center; width: 100%; }
+        .btn-action-success, .btn-action-warning, .btn-action-danger { flex: 1; padding: 12px 10px; font-size: 0.8rem; }
+    }
 </style>
 
 <div class="requests-container">
-    <h2 style="font-size: 2rem; color: #1e293b; margin-bottom: 30px;">Customer Requests 📥</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+        <h2 style="font-size: 2.2rem; color: #0f172a; font-weight: 900; margin: 0;">Bookings <span style="color: #3b82f6;">Pipeline</span> 📥</h2>
+        <a href="/owner/manage" style="text-decoration: none; color: #64748b; font-weight: 700;"><i class="fas fa-cog"></i> Shop Setup</a>
+    </div>
 
     <div class="requests-list">
         <% if (appointments && appointments.length > 0) { %>
             <% appointments.forEach(app => { %>
                 <div class="booking-item-card status-<%= app.status.toLowerCase() %>">
-                    <div style="padding: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+                    <div class="card-main-flex" style="padding: 30px; display: flex; justify-content: space-between; align-items: center; gap: 20px;">
+                        
                         <div style="display: flex; gap: 20px; align-items: center;">
-                            <div style="width: 55px; height: 55px; background: #e0f2fe; color: #0ea5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem;">
-                                <%= app.userId.name.charAt(0).toUpperCase() %>
+                            <div class="avatar-circle">
+                                <%= app.userId ? app.userId.name.charAt(0).toUpperCase() : '?' %>
                             </div>
                             <div>
-                                <h3 style="margin: 0; font-size: 1.2rem;"><%= app.serviceId.serviceName %></h3>
-                                <p style="margin: 3px 0; color: #475569; font-size: 0.9rem;"><strong>Customer:</strong> <%= app.userId.name %></p>
-                                <div style="color: #64748b; font-size: 0.85rem; font-weight: 600; margin-top: 5px;">
-                                    <i class="far fa-calendar-alt"></i> <%= new Date(app.bookingDate).toDateString() %> | <i class="far fa-clock"></i> <%= app.bookingTime %>
+                                <h3 style="margin: 0; font-size: 1.3rem; color: #1e293b; font-weight: 800;">
+                                    <%= app.serviceId ? app.serviceId.serviceName : 'Deleted Service' %>
+                                </h3>
+                                
+                                <p style="margin: 5px 0; color: #64748b; font-size: 0.95rem; font-weight: 500;">
+                                    Customer: <span style="color: #0f172a; font-weight: 700;"><%= app.userId ? app.userId.name : 'Unknown' %></span>
+                                </p>
+                                
+                                <div style="color: #94a3b8; font-size: 0.85rem; font-weight: 700; margin-top: 8px; display: flex; gap: 15px;">
+                                    <span><i class="far fa-calendar-alt"></i> <%= new Date(app.bookingDate).toDateString() %></span>
+                                    <span><i class="far fa-clock"></i> <%= app.bookingTime %></span>
                                 </div>
                             </div>
                         </div>
+
                         <div style="text-align: right;">
-                            <h2 style="color: #059669; margin: 0;">₹<%= app.serviceId.price %></h2>
-                            <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #94a3b8;"><%= app.status %></span>
+                            <h2 style="color: #10b981; margin: 0; font-weight: 900; font-size: 1.8rem;">
+                                ₹<%= app.serviceId ? app.serviceId.price : '0' %>
+                            </h2>
+                            <span style="display: inline-block; margin-top: 5px; padding: 4px 12px; background: #f1f5f9; border-radius: 8px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #475569; letter-spacing: 1px;">
+                                <%= app.status %>
+                            </span>
                         </div>
                     </div>
 
-                    <div style="background: #f8fafc; padding: 15px 25px; border-top: 1px solid #f1f5f9;">
-                        <form action="/owner/update-request" method="POST" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <div style="background: #f8fafc; padding: 20px 30px; border-top: 1px solid #f1f5f9;">
+                        <form action="/owner/update-request" method="POST" class="action-form" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                             <input type="hidden" name="appointmentId" value="<%= app._id %>">
 
-                            <button type="submit" name="status" value="Accepted" class="btn-action-success">Accept</button>
-                            <button type="button" onclick="toggleRes('<%= app._id %>')" class="btn-action-warning">Reschedule</button>
-                            <button type="submit" name="status" value="Rejected" class="btn-action-danger">Reject</button>
+                            <% if (app.status === 'Pending') { %>
+                                <button type="submit" name="status" value="Accepted" class="btn-action-success">Confirm Appointment</button>
+                                <button type="button" onclick="toggleRes('<%= app._id %>')" class="btn-action-warning">Reschedule</button>
+                                <button type="submit" name="status" value="Rejected" class="btn-action-danger">Decline</button>
+                            <% } else if (app.status === 'Accepted') { %>
+                                <p style="margin:0; font-weight:700; color:#059669;"><i class="fas fa-check-circle"></i> This booking is confirmed.</p>
+                                <button type="submit" name="status" value="Rejected" class="btn-action-danger" style="margin-left: auto;">Cancel Booking</button>
+                            <% } else { %>
+                                <p style="margin:0; font-weight:700; color:#64748b;">Status: <%= app.status %></p>
+                            <% } %>
 
-                            <div id="res-box-<%= app._id %>" class="res-drawer">
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    <input type="date" name="proposedDate" class="mini-input">
-                                    <input type="time" name="proposedTime" class="mini-input">
-                                    <button type="submit" name="status" value="Rescheduled" style="background: #1e293b; color:white; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-weight:600;">Confirm</button>
+                            <div id="res-box-<%= app._id %>" class="res-drawer" style="width: 100%;">
+                                <p style="margin-top: 0; font-weight: 800; color: #1e293b; font-size: 0.9rem;">Suggest New Slot:</p>
+                                <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                                    <input type="date" name="proposedDate" class="mini-input" required>
+                                    <input type="time" name="proposedTime" class="mini-input" required>
+                                    <button type="submit" name="status" value="Rescheduled" style="background: #0f172a; color:white; border:none; padding:12px 25px; border-radius:12px; cursor:pointer; font-weight:700; transition: 0.3s;">
+                                        Update Slot
+                                    </button>
                                 </div>
                             </div>
                         </form>
@@ -68,9 +117,12 @@
                 </div>
             <% }) %>
         <% } else { %>
-            <div style="text-align: center; padding: 60px; background: white; border-radius: 16px; border: 2px dashed #e2e8f0; color: #94a3b8;">
-                <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px;"></i>
-                <p>No pending requests right now.</p>
+            <div style="text-align: center; padding: 80px 20px; background: white; border-radius: 30px; border: 3px dashed #e2e8f0;">
+                <div style="width: 100px; height: 100px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                    <i class="fas fa-calendar-day" style="font-size: 2.5rem; color: #cbd5e1;"></i>
+                </div>
+                <h3 style="color: #1e293b; font-weight: 800; font-size: 1.5rem;">No Bookings Found</h3>
+                <p style="color: #94a3b8; max-width: 300px; margin: 10px auto;">Share your shop link with customers to start receiving appointments.</p>
             </div>
         <% } %>
     </div>
@@ -79,7 +131,11 @@
 <script>
     function toggleRes(id) {
         const box = document.getElementById('res-box-' + id);
-        box.style.display = (box.style.display === 'none' || box.style.display === '') ? 'block' : 'none';
+        if (box.style.display === 'none' || box.style.display === '') {
+            box.style.display = 'block';
+        } else {
+            box.style.display = 'none';
+        }
     }
 </script>
 

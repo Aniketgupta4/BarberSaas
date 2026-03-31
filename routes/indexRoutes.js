@@ -9,6 +9,7 @@ const Shop = require('../models/Shop');
 router.get('/', userController.getHomePage);
 router.get('/shop/:id', userController.getShopDetails);
 
+
 // Booking ka route (Login zaroori hai)
 router.post('/book', requireAuth, userController.bookAppointment);
 

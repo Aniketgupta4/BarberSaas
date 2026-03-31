@@ -163,12 +163,12 @@ exports.getOwnerRequests = async (req, res) => {
     }
 };
 
-// 6. Handle Appointment Status Update (Iska naam updateRequest kar diya taaki route se match kare)
+// 6. Handle Appointment Status Update
 exports.updateRequest = async (req, res) => {
     try {
         const { appointmentId, status, proposedDate, proposedTime } = req.body;
         
-        console.log("Data Received:", req.body); // Terminal mein check karo ye dikh raha hai ya nahi
+        console.log("Data Received:", req.body); 
 
         const updateData = { status: status };
 
@@ -179,16 +179,14 @@ exports.updateRequest = async (req, res) => {
 
         await Appointment.findByIdAndUpdate(appointmentId, updateData);
         
-        res.redirect('/owner/requests'); // Page refresh ho jayega update ke sath
+        res.redirect('/owner/requests'); 
     } catch (error) {
         console.error(error);
         res.status(500).send("Error updating");
     }
 };
 
-
-// controllers/ownerController.js mein ye function add karo
-
+// 7. Get Dashboard
 exports.getOwnerDashboard = async (req, res) => {
     try {
         const ownerId = res.locals.user._id;
@@ -199,7 +197,6 @@ exports.getOwnerDashboard = async (req, res) => {
             services = await Service.find({ shopId: shop._id });
         }
 
-        // Render karo owner-dashboard file ko
         res.render('owner-dashboard', { 
             title: 'Owner Dashboard | BarberSaaS', 
             shop, 
@@ -211,16 +208,11 @@ exports.getOwnerDashboard = async (req, res) => {
     }
 };
 
-
-
-// Employee Delete karne ka function
+// 8. Delete Employee
 exports.deleteEmployee = async (req, res) => {
     try {
         const employeeId = req.params.id;
-        
-        // Check karo ki ye employee exist karta hai
         await Employee.findByIdAndDelete(employeeId);
-        
         console.log("Employee Deleted Successfully! 🗑️");
         res.redirect('/owner/manage');
     } catch (error) {
@@ -229,23 +221,66 @@ exports.deleteEmployee = async (req, res) => {
     }
 };
 
-
-
-// controllers/ownerController.js
-
+// 9. Delete Service
 exports.deleteService = async (req, res) => {
     try {
-        const serviceId = req.params.id; // URL se ID nikalo
-        
-        // Database se delete karo
+        const serviceId = req.params.id; 
         await Service.findByIdAndDelete(serviceId);
-        
         console.log("Service Deleted Successfully! ✂️🗑️");
-        
-        // Wapas management page par bhej do
         res.redirect('/owner/manage'); 
     } catch (error) {
         console.error("Delete Service Error:", error);
         res.status(500).send("Server Error: Service delete nahi ho payi.");
+    }
+};
+
+// ==========================================
+// PART 3: PUBLIC SEARCH (NEW - WORKING GPS)
+// ==========================================
+
+// 10. Home Search Logic (By Name, Place, Services, and GPS)
+exports.getHome = async (req, res) => {
+    try {
+        const { query, lat, lng } = req.query;
+        let findQuery = {};
+
+        // Keyword Search (Name, Place, ya Services/Facilities)
+        if (query) {
+            findQuery.$or = [
+                { shopName: { $regex: query, $options: 'i' } },
+                { address: { $regex: query, $options: 'i' } },
+                { facilities: { $regex: query, $options: 'i' } }
+            ];
+        }
+
+        let shops;
+
+        // GPS Logic: Agar user ne Near Me dabaya aur search kiya
+        if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
+            shops = await Shop.aggregate([
+                {
+                    $geoNear: {
+                        near: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
+                        distanceField: "dist.calculated", // Distance field generate karega
+                        maxDistance: 20000, // 20km radius
+                        query: findQuery,
+                        spherical: true
+                    }
+                }
+            ]);
+        } else {
+            // Normal Search bina GPS ke
+            shops = await Shop.find(findQuery).sort({ createdAt: -1 });
+        }
+
+        res.render('home', { 
+            shops, 
+            query: query || '', 
+            user: res.locals.user || null 
+        });
+
+    } catch (error) {
+        console.error("Home Search Error:", error);
+        res.status(500).send("Bhai search failed ho gayi!");
     }
 };
