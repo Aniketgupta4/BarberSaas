@@ -19,13 +19,18 @@
     .status-pending { border-left: 8px solid #3b82f6; }
     .status-rejected { border-left: 8px solid #ef4444; }
     .status-rescheduled { border-left: 8px solid #f59e0b; }
+    /* 🔴 NAYA: Completed Status Color (Premium Purple) */
+    .status-completed { border-left: 8px solid #8b5cf6; } 
 
     .btn-action-success { background: #10b981; color: white; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
     .btn-action-warning { background: #f59e0b; color: white; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
     .btn-action-danger { background: #fee2e2; color: #ef4444; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    /* 🔴 NAYA BUTTON: Complete Button Style */
+    .btn-action-purple { background: #8b5cf6; color: white; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3); }
     
     .btn-action-success:hover { background: #059669; transform: scale(1.05); }
     .btn-action-danger:hover { background: #ef4444; color: white; }
+    .btn-action-purple:hover { background: #7c3aed; transform: scale(1.05); } /* Purple hover */
 
     .res-drawer { display: none; margin-top: 15px; padding: 20px; background: #f8fafc; border-radius: 15px; border: 2px dashed #cbd5e1; animation: slideDown 0.3s ease; }
     .mini-input { padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-weight: 600; }
@@ -41,7 +46,7 @@
     @media (max-width: 600px) {
         .card-main-flex { flex-direction: column; align-items: flex-start !important; }
         .action-form { justify-content: center; width: 100%; }
-        .btn-action-success, .btn-action-warning, .btn-action-danger { flex: 1; padding: 12px 10px; font-size: 0.8rem; }
+        .btn-action-success, .btn-action-warning, .btn-action-danger, .btn-action-purple { flex: 1; padding: 12px 10px; font-size: 0.8rem; }
     }
 </style>
 
@@ -98,9 +103,17 @@
                                     <button type="submit" name="status" value="Accepted" class="btn-action-success">Confirm</button>
                                     <button type="button" onclick="toggleRes('<%= app._id %>')" class="btn-action-warning">Reschedule</button>
                                     <button type="submit" name="status" value="Rejected" class="btn-action-danger">Decline</button>
+                                
                                 <% } else if (app.status === 'Accepted') { %>
-                                    <p style="margin:0; font-weight:700; color:#059669;"><i class="fas fa-check-circle"></i> This booking is confirmed.</p>
-                                    <button type="submit" name="status" value="Rejected" class="btn-action-danger" style="margin-left: 10px;">Cancel Booking</button>
+                                    <p style="margin:0; font-weight:700; color:#059669;"><i class="fas fa-check-circle"></i> Confirmed.</p>
+                                    <button type="submit" name="status" value="Completed" class="btn-action-purple" style="margin-left: auto;">
+                                        <i class="fas fa-check-double"></i> Mark Completed
+                                    </button>
+                                    <button type="submit" name="status" value="Rejected" class="btn-action-danger" style="margin-left: 10px;">Cancel</button>
+                                
+                                <% } else if (app.status === 'Completed') { %>
+                                    <p style="margin:0; font-weight:800; color:#8b5cf6;"><i class="fas fa-trophy"></i> Service Successfully Completed!</p>
+                                
                                 <% } else { %>
                                     <p style="margin:0; font-weight:700; color:#64748b;">Status: <%= app.status %></p>
                                 <% } %>

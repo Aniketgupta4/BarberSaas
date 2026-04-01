@@ -1,118 +1,277 @@
 <%- include('partials/header') %>
 
-<div class="container admin-page">
+<style>
+    /* Premium Dashboard Styles */
+    .dashboard-header-flex { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; flex-wrap: wrap; gap: 20px; }
+    .user-profile-summary { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+    .user-avatar-large { 
+        width: 70px; height: 70px; background: linear-gradient(135deg, #0f172a, #334155); 
+        color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem; box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
+        flex-shrink: 0;
+    }
+    
+    /* 📈 Analytics Cards Grid (6 Cards Layout) */
+    .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; width: 100%; margin-bottom: 30px; }
+    .analytic-card { padding: 25px; border-radius: 20px; color: white; display: flex; flex-direction: column; position: relative; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); transition: 0.3s; }
+    .analytic-card:hover { transform: translateY(-5px); }
+    .analytic-card::after { content: '\f0d6'; font-family: 'Font Awesome 5 Free'; font-weight: 900; position: absolute; right: -10px; bottom: -20px; font-size: 6rem; opacity: 0.1; }
+    
+    /* Revenue Colors (Money Icon) */
+    .card-green { background: linear-gradient(135deg, #10b981, #059669); }
+    .card-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    .card-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+    
+    /* Customer Colors (Users Icon) */
+    .card-orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .card-teal { background: linear-gradient(135deg, #14b8a6, #0f766e); }
+    .card-rose { background: linear-gradient(135deg, #f43f5e, #be123c); }
+    
+    .card-orange::after, .card-teal::after, .card-rose::after { content: '\f0c0'; } 
+
+    .analytic-value { font-size: 2rem; font-weight: 900; margin-bottom: 5px; word-break: break-all; }
+    .analytic-label { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; }
+
+    /* Chart Container */
+    .chart-container { background: white; padding: 25px; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 25px; overflow-x: auto; }
+    
+    .admin-main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
+    
+    /* 🔴 RESPONSIVE TWEAKS */
+    @media (max-width: 992px) {
+        .admin-main-grid { grid-template-columns: 1fr; } /* Stack columns on tablets/mobile */
+        .chart-container { min-height: 350px; } 
+    }
+
+    @media (max-width: 576px) {
+        .analytics-grid { grid-template-columns: 1fr; } /* Full width cards on small phones */
+        .dashboard-header-flex { justify-content: center; text-align: center; }
+        .user-profile-summary { flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+        .sub-status { flex-direction: column; gap: 8px !important; }
+        .chart-container { padding: 15px; }
+        .shop-preview-banner { height: 120px !important; }
+        .shop-card-info h3 { font-size: 1.2rem !important; }
+        .shop-card-info > div { flex-direction: column; gap: 10px; }
+        .shop-card-info .timing-pills { flex-direction: column; gap: 10px; width: 100%; }
+        .shop-card-info .timing-pills span { display: block; text-align: center; }
+        .btn-edit-shop { width: 100%; text-align: center; }
+    }
+</style>
+
+<div class="container admin-page" style="padding-top: 30px;">
+    
     <div class="dashboard-header-flex">
         <div class="user-profile-summary">
             <div class="user-avatar-large">
-                <i class="fas fa-user-tie"></i>
+                <i class="fas fa-store"></i>
             </div>
             <div class="welcome-text">
-                <h1>Welcome back, <%= user.name %>! 👋</h1>
-                <div class="sub-status">
-                    <span class="status-pill <%= user.isActive ? 'active' : 'expired' %>">
+                <h1 style="margin: 0; font-weight: 900; font-size: 2.2rem; color: #0f172a;">Welcome, <%= user.name %>! 👋</h1>
+                <div class="sub-status" style="margin-top: 8px; display: flex; align-items: center; gap: 15px;">
+                    <span style="padding: 5px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 800; background: <%= user.isActive ? '#dcfce7' : '#fee2e2' %>; color: <%= user.isActive ? '#166534' : '#991b1b' %>;">
                         <%= user.isActive ? 'Active Plan' : 'Plan Expired' %>
                     </span>
-                    <p>Valid Till: <strong><%= user.subscriptionEnd ? user.subscriptionEnd.toDateString() : 'N/A' %></strong></p>
+                    <span style="color: #64748b; font-weight: 600; font-size: 0.9rem;">
+                        <i class="fas fa-crown" style="color: #f59e0b;"></i> Valid Till: <%= user.subscriptionEnd ? user.subscriptionEnd.toDateString() : 'N/A' %>
+                    </span>
                 </div>
-            </div>
-        </div>
-        
-        <div class="stats-container">
-            <div class="stat-card">
-                <span class="stat-value"><%= typeof services !== 'undefined' ? services.length : 0 %></span>
-                <span class="stat-label">Live Services</span>
             </div>
         </div>
     </div>
 
     <% if (!shop) { %>
         <div class="setup-container">
-            <div class="admin-card setup-card">
-                <div class="card-header">
-                    <div class="header-icon"><i class="fas fa-store-alt"></i></div>
-                    <h3>Setup Your Shop Profile</h3>
-                    <p>Tell us about your salon to start accepting bookings.</p>
-                </div>
-                <a href="/owner/manage" class="btn-admin-submit" style="text-decoration: none; text-align: center; display: block; margin-top: 20px;">
-                    Go to Shop Setup <i class="fas fa-arrow-right"></i>
+            <div class="admin-card setup-card" style="background: white; padding: 40px; border-radius: 20px; text-align: center; border: 2px dashed #cbd5e1;">
+                <div class="header-icon" style="font-size: 3rem; color: #3b82f6; margin-bottom: 20px;"><i class="fas fa-store-alt"></i></div>
+                <h3 style="font-size: 1.5rem; font-weight: 800; color: #0f172a;">Setup Your Shop Profile</h3>
+                <p style="color: #64748b; margin-bottom: 25px;">Tell us about your salon to start tracking analytics and accepting bookings.</p>
+                <a href="/owner/manage" style="background: #0f172a; color: white; padding: 12px 30px; border-radius: 12px; font-weight: 700; text-decoration: none; display: inline-block;">
+                    Go to Shop Setup <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
                 </a>
             </div>
         </div>
-
     <% } else { %>
+
+        <h3 style="color: #0f172a; font-weight: 800; margin-bottom: 15px;"><i class="fas fa-chart-line" style="color: #3b82f6;"></i> Business Overview</h3>
+        <div class="analytics-grid">
+            
+            <div class="analytic-card card-green">
+                <span class="analytic-value">₹<%= typeof analytics !== 'undefined' ? analytics.todayRevenue : 0 %></span>
+                <span class="analytic-label">Today's Revenue</span>
+            </div>
+            <div class="analytic-card card-blue">
+                <span class="analytic-value">₹<%= typeof analytics !== 'undefined' ? analytics.weekRevenue : 0 %></span>
+                <span class="analytic-label">Weekly Revenue</span>
+            </div>
+            <div class="analytic-card card-purple">
+                <span class="analytic-value">₹<%= typeof analytics !== 'undefined' ? analytics.monthRevenue : 0 %></span>
+                <span class="analytic-label">Monthly Revenue</span>
+            </div>
+
+            <div class="analytic-card card-orange">
+                <span class="analytic-value"><%= typeof analytics !== 'undefined' ? analytics.todayCustomers : 0 %></span>
+                <span class="analytic-label">Today's Customers</span>
+            </div>
+            <div class="analytic-card card-teal">
+                <span class="analytic-value"><%= typeof analytics !== 'undefined' ? analytics.weekCustomers : 0 %></span>
+                <span class="analytic-label">Weekly Customers</span>
+            </div>
+            <div class="analytic-card card-rose">
+                <span class="analytic-value"><%= typeof analytics !== 'undefined' ? analytics.monthCustomers : 0 %></span>
+                <span class="analytic-label">Monthly Customers</span>
+            </div>
+        </div>
+
         <div class="admin-main-grid">
             
             <div class="dashboard-left-column">
-                <div class="admin-card shop-overview-card" style="margin-bottom: 25px;">
-                    <div class="shop-preview-banner">
-                        <img src="<%= shop.bannerImage %>" alt="Shop Banner">
+                
+                <div class="chart-container">
+                    <h3 style="margin: 0 0 20px 0; font-weight: 800; color: #0f172a;">Revenue & Growth 📈</h3>
+                    <div style="height: 300px; width: 100%; min-width: 300px;">
+                        <canvas id="revenueChart"></canvas>
                     </div>
-                    <div class="shop-card-info">
+                </div>
+
+                <div class="admin-card shop-overview-card" style="margin-bottom: 25px; background: white; border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0;">
+                    <div class="shop-preview-banner" style="height: 150px; overflow: hidden;">
+                        <img src="<%= shop.bannerImage %>" alt="Shop Banner" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div class="shop-card-info" style="padding: 25px;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <h3><%= shop.shopName %></h3>
-                            <span class="badge-status">Online</span>
+                            <h3 style="margin: 0 0 10px; font-size: 1.5rem; font-weight: 800;"><%= shop.shopName %></h3>
+                            <span style="background: <%= shop.isOpen ? '#dcfce7' : '#fee2e2' %>; color: <%= shop.isOpen ? '#166534' : '#991b1b' %>; padding: 4px 12px; border-radius: 8px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; white-space: nowrap;">
+                                <%= shop.isOpen ? 'Shop Open' : 'Shop Closed' %>
+                            </span>
                         </div>
-                        <p class="loc"><i class="fas fa-map-marker-alt"></i> <%= shop.address %></p>
-                        <div class="timing-pills">
-                            <span><i class="far fa-sun"></i> <%= shop.openingTime %></span>
-                            <span><i class="far fa-moon"></i> <%= shop.closingTime %></span>
+                        <p style="color: #64748b; margin: 0 0 15px;"><i class="fas fa-map-marker-alt" style="color: #3b82f6;"></i> <%= shop.address %></p>
+                        
+                        <div class="timing-pills" style="display: flex; gap: 15px; margin-bottom: 20px;">
+                            <span style="background: #f8fafc; padding: 8px 15px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; color: #0f172a;"><i class="far fa-sun" style="color: #f59e0b;"></i> <%= shop.openingTime %></span>
+                            <span style="background: #f8fafc; padding: 8px 15px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; color: #0f172a;"><i class="far fa-moon" style="color: #8b5cf6;"></i> <%= shop.closingTime %></span>
                         </div>
-                        <a href="/owner/manage" class="btn-edit-shop">
+                        
+                        <a href="/owner/manage" class="btn-edit-shop" style="display: inline-block; background: #f1f5f9; color: #0f172a; padding: 10px 20px; border-radius: 10px; font-weight: 700; text-decoration: none; transition: 0.3s;">
                             Shop Settings <i class="fas fa-cog"></i>
                         </a>
                     </div>
                 </div>
-
-                <div class="admin-card">
-                    <div class="card-header">
-                        <h3>Latest Updates 📣</h3>
-                    </div>
-                    <div class="recent-notice">
-                        <i class="fas fa-info-circle"></i>
-                        <p>Check the <strong>Requests</strong> tab to see new customer bookings. Keep your status 'Online' to get more visibility!</p>
-                    </div>
-                </div>
             </div>
 
-            <div class="admin-card dashboard-actions">
-                <div class="card-header">
-                    <h3>Quick Actions ⚡</h3>
-                    <p>Access your main tools quickly</p>
-                </div>
+            <div class="dashboard-right-column">
+                <div class="admin-card dashboard-actions" style="background: white; padding: 25px; border-radius: 20px; border: 1px solid #e2e8f0;">
+                    <div class="card-header" style="margin-bottom: 20px;">
+                        <h3 style="margin: 0; font-weight: 800; color: #0f172a;">Quick Actions ⚡</h3>
+                        <p style="margin: 5px 0 0; color: #64748b; font-size: 0.9rem;">Manage your business</p>
+                    </div>
 
-                <div class="action-buttons-grid">
-                    <a href="/owner/requests" class="action-btn-large">
-                        <div class="a-icon" style="background: #eef2ff; color: #4f46e5;"><i class="fas fa-calendar-check"></i></div>
-                        <div class="a-text">
-                            <strong>Manage Bookings</strong>
-                            <span>Approve or Reschedule requests</span>
-                        </div>
-                    </a>
-                    <a href="/owner/manage" class="action-btn-large">
-                        <div class="a-icon" style="background: #f0fdf4; color: #16a34a;"><i class="fas fa-cut"></i></div>
-                        <div class="a-text">
-                            <strong>Service Menu</strong>
-                            <span>Edit prices and grooming options</span>
-                        </div>
-                    </a>
-                    <a href="/owner/manage" class="action-btn-large">
-                        <div class="a-icon" style="background: #fff7ed; color: #ea580c;"><i class="fas fa-users-cog"></i></div>
-                        <div class="a-text">
-                            <strong>Staff & Employees</strong>
-                            <span>Manage your barber team</span>
-                        </div>
-                    </a>
-                    <a href="/" class="action-btn-large">
-                        <div class="a-icon" style="background: #fef2f2; color: #dc2626;"><i class="fas fa-external-link-alt"></i></div>
-                        <div class="a-text">
-                            <strong>Public Preview</strong>
-                            <span>See how customers see your shop</span>
-                        </div>
-                    </a>
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <a href="/owner/requests" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8fafc; border-radius: 15px; text-decoration: none; transition: 0.3s; border: 1px solid transparent;">
+                            <div style="width: 45px; height: 45px; background: #eef2ff; color: #4f46e5; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;"><i class="fas fa-calendar-check"></i></div>
+                            <div>
+                                <strong style="display: block; color: #0f172a; font-size: 1rem;">Manage Bookings</strong>
+                                <span style="color: #64748b; font-size: 0.8rem;">Approve or Reschedule</span>
+                            </div>
+                        </a>
+                        
+                        <a href="/owner/manage" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8fafc; border-radius: 15px; text-decoration: none; transition: 0.3s; border: 1px solid transparent;">
+                            <div style="width: 45px; height: 45px; background: #f0fdf4; color: #16a34a; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;"><i class="fas fa-cut"></i></div>
+                            <div>
+                                <strong style="display: block; color: #0f172a; font-size: 1rem;">Service Menu</strong>
+                                <span style="color: #64748b; font-size: 0.8rem;">Edit prices & options</span>
+                            </div>
+                        </a>
+
+                        <a href="/owner/manage" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8fafc; border-radius: 15px; text-decoration: none; transition: 0.3s; border: 1px solid transparent;">
+                            <div style="width: 45px; height: 45px; background: #fff7ed; color: #ea580c; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;"><i class="fas fa-users-cog"></i></div>
+                            <div>
+                                <strong style="display: block; color: #0f172a; font-size: 1rem;">Staff & Team</strong>
+                                <span style="color: #64748b; font-size: 0.8rem;">Manage barbers</span>
+                            </div>
+                        </a>
+
+                        <a href="/" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8fafc; border-radius: 15px; text-decoration: none; transition: 0.3s; border: 1px solid transparent;">
+                            <div style="width: 45px; height: 45px; background: #fef2f2; color: #dc2626; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;"><i class="fas fa-external-link-alt"></i></div>
+                            <div>
+                                <strong style="display: block; color: #0f172a; font-size: 1rem;">Public Preview</strong>
+                                <span style="color: #64748b; font-size: 0.8rem;">See customer view</span>
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     <% } %>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    <% if (shop && typeof analytics !== 'undefined') { %>
+        document.addEventListener("DOMContentLoaded", function() {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            
+            const revenueData = [
+                <%= analytics.todayRevenue %>, 
+                <%= analytics.weekRevenue %>, 
+                <%= analytics.monthRevenue %>
+            ];
+            
+            const customerData = [
+                <%= analytics.todayCustomers %>, 
+                <%= analytics.weekCustomers %>, 
+                <%= analytics.monthCustomers %>
+            ];
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Today', 'This Week', 'This Month'],
+                    datasets: [
+                        {
+                            label: 'Revenue (₹)',
+                            data: revenueData,
+                            backgroundColor: 'rgba(59, 130, 246, 0.9)', // Blue
+                            borderRadius: 8,
+                            barThickness: 25
+                        },
+                        {
+                            label: 'Customers (👥)',
+                            data: customerData,
+                            backgroundColor: 'rgba(245, 158, 11, 0.9)', // Orange
+                            borderRadius: 8,
+                            barThickness: 25
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            display: true,
+                            position: 'top',
+                            labels: { font: { family: 'Inter', weight: 'bold' } }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { borderDash: [5, 5], color: '#f1f5f9' },
+                            ticks: { font: { weight: 'bold', family: 'Inter' } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { weight: 'bold', family: 'Inter' } }
+                        }
+                    },
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        });
+    <% } %>
+</script>
 
 <%- include('partials/footer') %>

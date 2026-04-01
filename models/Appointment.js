@@ -11,9 +11,14 @@ const appointmentSchema = new mongoose.Schema({
         enum: ['Pending', 'Accepted', 'Rejected', 'Rescheduled', 'Completed'], 
         default: 'Pending' 
     },
-    // Agar Barber reschedule karta hai toh naya time yahan aayega
+    // Reschedule Info
     proposedTime: { type: String, default: null },
-    proposedDate: { type: Date, default: null }
+    proposedDate: { type: Date, default: null },
+    
+    // 🔴 NAYI FIELDS: Rating ke liye
+    isRated: { type: Boolean, default: false },
+    rating: { type: Number, min: 1, max: 5, default: null }
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Appointment', appointmentSchema);

@@ -7,11 +7,17 @@ const shopSchema = new mongoose.Schema({
     address: { type: String, required: true },
     openingTime: { type: String, required: true },
     closingTime: { type: String, required: true },
+    // Shop Open/Close status ke liye
+    isOpen: { type: Boolean, default: true },
     location: {
         type: { type: String, enum: ['Point'], default: 'Point' },
         coordinates: { type: [Number], required: true } // [Longitude, Latitude]
     },
-    facilities: { type: [String], default: [] } // e.g., AC, WiFi
+    facilities: { type: [String], default: [] },
+    
+    // 🔴 NAYI FIELDS: Ratings & Reviews ke liye 🔴
+    averageRating: { type: Number, default: 0 },
+    totalReviews: { type: Number, default: 0 }
 }, { timestamps: true });
 
 // GeoJSON index for location search (aas-paas ki dukaane dhoondhne ke liye)

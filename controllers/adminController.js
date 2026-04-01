@@ -3,33 +3,57 @@ const Shop = require('../models/Shop');
 const Appointment = require('../models/Appointment');
 const bcrypt = require('bcryptjs');
 
-// Render Admin Dashboard
+// Render Admin Dashboard (God Mode Integrated 👑)
 exports.getAdminDashboard = async (req, res) => {
     try {
-        // 🔢 Pagination Setup
+        // 🔢 Pagination Setup (For Partners/Owners List)
         const page = parseInt(req.query.page) || 1;
         const limit = 3; // Ek page par 3 partners
         const skip = (page - 1) * limit;
 
         // 📊 Dashboard Stats Ke Liye Total Counts
         const totalOwners = await User.countDocuments({ role: 'BarberOwner' });
+        // Customers wo hain jo BarberOwner nahi hain
+        const totalCustomers = await User.countDocuments({ role: { $ne: 'BarberOwner' } }); 
         const totalShops = await Shop.countDocuments();
         const totalBookings = await Appointment.countDocuments();
         
+        // 💰 NAYA: Platform Financial Analytics
+        const completedAppointments = await Appointment.find({ status: 'Completed' }).populate('serviceId');
+        let totalPlatformVolume = 0;
+        
+        completedAppointments.forEach(app => {
+            if (app.serviceId && app.serviceId.price) {
+                totalPlatformVolume += app.serviceId.price;
+            }
+        });
+        
+        // 5% Commission Calculate karo
+        const platformEarnings = (totalPlatformVolume * 0.05).toFixed(2); 
+
         const totalPages = Math.ceil(totalOwners / limit);
 
-        // 🔴 CRITICAL FIX: Variable ka naam 'partners' se badal kar 'owners' kiya hai
+        // 👨‍💼 Existing Logic: Fetch Barber Owners for management
         const owners = await User.find({ role: 'BarberOwner' })
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
 
+        // 🏪 NAYA: Fetch all shops for the Master Table (Sorted by Rating)
+        const allShops = await Shop.find()
+            .populate('ownerId')
+            .sort({ averageRating: -1 });
+
         res.render('admin-dashboard', { 
-            title: 'Admin Dashboard', 
-            owners,          // EJS ab isko aaram se read kar lega
-            totalOwners,     // Top cards ke liye
-            totalShops,      // Top cards ke liye
-            totalBookings,   // Top cards ke liye
+            title: 'Admin God Mode Dashboard', 
+            owners,          
+            totalOwners,
+            totalCustomers,       // Naya pass kiya
+            totalShops,      
+            totalBookings,   
+            totalPlatformVolume,  // Naya pass kiya
+            platformEarnings,     // Naya pass kiya
+            allShops,             // Naya pass kiya
             currentPage: page, 
             totalPages
         });

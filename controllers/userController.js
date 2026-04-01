@@ -66,14 +66,13 @@ exports.bookAppointment = async (req, res) => {
 // Get Customer Dashboard (My Bookings)
 exports.getUserDashboard = async (req, res) => {
     try {
-        const userId = res.locals.user._id; // Ya req.user._id (jo tum use kar rahe ho)
+        const userId = res.locals.user._id; 
         
         // Pagination setup
-        const page = parseInt(req.query.page) || 1; // Current page (default 1)
-        const limit = 5; // Ek page par kitni bookings dikhani hain
+        const page = parseInt(req.query.page) || 1; 
+        const limit = 5; 
         const skip = (page - 1) * limit;
 
-        // Total bookings count (Next/Prev button ke liye zaroori hai)
         const totalAppointments = await Appointment.countDocuments({ userId });
         const totalPages = Math.ceil(totalAppointments / limit);
 
@@ -97,8 +96,6 @@ exports.getUserDashboard = async (req, res) => {
     }
 };
 
-
-
 // 2. Delete/Cancel Booking ka function
 exports.deleteBooking = async (req, res) => {
     try {
@@ -115,21 +112,65 @@ exports.deleteBooking = async (req, res) => {
     }
 };
 
-
-
-
 // 3. Confirm Rescheduled Booking
 exports.confirmReschedule = async (req, res) => {
     try {
         const { appointmentId } = req.body;
         
-        // Jab user "Accept New Time" dabaye, toh status wapas "Accepted" kar do
         await Appointment.findByIdAndUpdate(appointmentId, { status: 'Accepted' });
         
         console.log("New Time Accepted by User! ✅");
-        res.redirect('/user/dashboard'); // Wapas dashboard pe bhej do
+        res.redirect('/user/dashboard'); 
     } catch (error) {
         console.error("Confirm Reschedule Error:", error);
         res.status(500).send("Error confirm karne mein problem aayi bhai.");
+    }
+};
+
+// ==========================================
+// 🔴 NEW: PART 3: RATING SYSTEM LOGIC
+// ==========================================
+
+exports.rateService = async (req, res) => {
+    try {
+        const { appointmentId, rating } = req.body;
+        const numericRating = parseInt(rating);
+
+        // 1. Appointment ko update karo (Save rating)
+        const appointment = await Appointment.findByIdAndUpdate(
+            appointmentId,
+            { rating: numericRating, isRated: true },
+            { new: true } // Return updated document
+        );
+
+        if (!appointment) return res.status(404).send("Appointment not found");
+
+        // 2. Us Shop ka naya Average Calculate karo
+        const shopId = appointment.shopId;
+        
+        // Us dukaan ke saare RATED appointments nikalo
+        const allRatedAppointments = await Appointment.find({ shopId: shopId, isRated: true });
+        
+        const totalReviews = allRatedAppointments.length;
+        let sumRatings = 0;
+        
+        allRatedAppointments.forEach(app => {
+            sumRatings += app.rating;
+        });
+
+        // Average nikal kar 1 decimal place tak set karo (e.g., 4.5)
+        const averageRating = totalReviews > 0 ? (sumRatings / totalReviews).toFixed(1) : 0;
+
+        // 3. Shop DB mein update karo
+        await Shop.findByIdAndUpdate(shopId, {
+            averageRating: parseFloat(averageRating),
+            totalReviews: totalReviews
+        });
+
+        console.log(`Rating submitted! Shop Average is now: ${averageRating} ⭐`);
+        res.redirect('/user/dashboard');
+    } catch (error) {
+        console.error("Rating Submission Error:", error);
+        res.status(500).send("Error submitting rating.");
     }
 };

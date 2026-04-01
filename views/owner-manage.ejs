@@ -31,6 +31,14 @@
         border-radius: 12px; font-weight: 600; display: flex; align-items: center;
     }
 
+    /* 🎚️ Modern Toggle Switch (iOS Style) */
+    .switch { position: relative; display: inline-block; width: 54px; height: 30px; margin: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+    .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    input:checked + .slider { background-color: var(--secondary); }
+    input:checked + .slider:before { transform: translateX(24px); }
+
     /* 📑 Horizontal Scroll Tabs for Mobile */
     .tabs-nav-container {
         display: flex; gap: 10px; margin-bottom: 30px; overflow-x: auto;
@@ -44,10 +52,7 @@
         transition: 0.3s; white-space: nowrap; flex-shrink: 0; display: flex; align-items: center; gap: 8px;
     }
 
-    .active-tab {
-        background: var(--dark); color: white; border-color: var(--dark);
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
-    }
+    .active-tab { background: var(--dark); color: white; border-color: var(--dark); box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2); }
 
     /* 🏗️ Modern Grid Forms */
     .form-grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
@@ -58,28 +63,21 @@
         outline: none; font-size: 16px; transition: 0.3s;
     }
     .form-input-premium:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
-    
     .form-group label { display: block; font-weight: 700; margin-bottom: 8px; color: #334155; font-size: 0.85rem; }
 
-    /* ✂️ Service Menu Responsive Table (The Magic Part) */
+    /* ✂️ Service Menu Responsive Table */
     .table-responsive { width: 100%; border-radius: 15px; overflow: hidden; background: white; border: 1px solid #f1f5f9; }
     .admin-table { width: 100%; border-collapse: collapse; }
     .admin-table th { background: #f8fafc; padding: 15px; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: var(--slate); font-weight: 800; }
     .admin-table td { padding: 15px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 
     @media (max-width: 768px) {
-        .admin-table thead { display: none; } /* Hide headers on mobile */
+        .admin-table thead { display: none; }
         .admin-table, .admin-table tbody, .admin-table tr, .admin-table td { display: block; width: 100%; }
         .admin-table tr { margin-bottom: 15px; border: 1px solid #e2e8f0; border-radius: 15px; padding: 10px; background: white; }
-        .admin-table td { 
-            display: flex; justify-content: space-between; align-items: center; 
-            text-align: right; padding: 10px 5px; border-bottom: 1px dashed #f1f5f9;
-        }
+        .admin-table td { display: flex; justify-content: space-between; align-items: center; text-align: right; padding: 10px 5px; border-bottom: 1px dashed #f1f5f9; }
         .admin-table td:last-child { border-bottom: none; }
-        .admin-table td::before {
-            content: attr(data-label); font-weight: 800; color: var(--slate);
-            font-size: 0.75rem; text-transform: uppercase; float: left;
-        }
+        .admin-table td::before { content: attr(data-label); font-weight: 800; color: var(--slate); font-size: 0.75rem; text-transform: uppercase; float: left; }
         .table-img { width: 60px !important; height: 60px !important; }
     }
 
@@ -89,23 +87,16 @@
 
     /* 🧑‍🎨 Staff Section */
     .staff-cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-    .staff-card-item {
-        background: white; padding: 20px; border-radius: 20px; display: flex; gap: 15px;
-        align-items: center; border: 1.5px solid #f1f5f9; position: relative; transition: 0.3s;
-    }
+    .staff-card-item { background: white; padding: 20px; border-radius: 20px; display: flex; gap: 15px; align-items: center; border: 1.5px solid #f1f5f9; position: relative; transition: 0.3s; }
     .staff-card-item.available { border-top: 5px solid var(--secondary); }
     .staff-card-item.away { border-top: 5px solid var(--danger); opacity: 0.8; }
 
-    .btn-delete-icon {
-        background: #fee2e2; color: var(--danger); border: none; width: 32px; height: 32px;
-        border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
-    }
+    .btn-delete-icon { background: #fee2e2; color: var(--danger); border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
     .btn-delete-icon:hover { background: var(--danger); color: white; transform: scale(1.1); }
 
     .file-upload-wrapper { border: 2px dashed #cbd5e1; padding: 30px; border-radius: 15px; text-align: center; position: relative; background: #f8fafc; }
     .file-upload-wrapper input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 
-    /* 🎬 Animations */
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .tab-content-box { animation: fadeIn 0.4s ease forwards; }
 </style>
@@ -116,9 +107,26 @@
             <h2 style="margin: 0; color: var(--dark);">Shop Configuration 🛠️</h2>
             <p style="margin: 5px 0 0 0; color: var(--slate);">Manage profile, services, and team.</p>
         </div>
-        <a href="/owner/requests" class="btn-bookings-link">
-            <i class="fas fa-calendar-check" style="margin-right: 8px;"></i> View Bookings
-        </a>
+        
+        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+            <% if (shop) { %>
+            <div style="display: flex; align-items: center; gap: 12px; background: <%= shop.isOpen ? '#dcfce7' : '#fee2e2' %>; padding: 10px 15px; border-radius: 12px; border: 1px solid <%= shop.isOpen ? '#bbf7d0' : '#fecaca' %>;">
+                <span style="font-weight: 800; font-size: 0.9rem; color: <%= shop.isOpen ? '#166534' : '#991b1b' %>;">
+                    <%= shop.isOpen ? 'Shop is OPEN' : 'Shop is CLOSED' %>
+                </span>
+                <form action="/owner/toggle-status" method="POST" style="margin: 0; display: flex;">
+                    <label class="switch">
+                        <input type="checkbox" onchange="this.form.submit()" <%= shop.isOpen ? 'checked' : '' %>>
+                        <span class="slider"></span>
+                    </label>
+                </form>
+            </div>
+            <% } %>
+
+            <a href="/owner/requests" class="btn-bookings-link">
+                <i class="fas fa-calendar-check" style="margin-right: 8px;"></i> Bookings
+            </a>
+        </div>
     </div>
 
     <div class="tabs-nav-container">
@@ -136,6 +144,9 @@
     <div id="setup" class="tab-content-box">
         <form action="/owner/setup-shop" method="POST" enctype="multipart/form-data">
             <div class="form-grid-layout">
+                
+                <input type="checkbox" name="isOpen" <%= (!shop || shop.isOpen) ? 'checked' : '' %> style="display: none;">
+
                 <div class="form-group">
                     <label>Shop Name</label>
                     <input type="text" name="shopName" class="form-input-premium" value="<%= shop ? shop.shopName : '' %>" required>

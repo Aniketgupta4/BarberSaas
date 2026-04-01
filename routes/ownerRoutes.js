@@ -43,4 +43,7 @@ router.post('/update-request', ownerController.updateRequest);
 
 router.post('/delete-request/:id', ownerController.deleteRequest);
 
+// Toggle Shop Status (Open/Close)
+router.post('/toggle-status', ownerController.toggleShopStatus);
+
 module.exports = router;

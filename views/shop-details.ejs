@@ -10,8 +10,13 @@
                 <p><i class="fas fa-map-marker-alt"></i> <%= shop.address %></p>
                 <div class="shop-meta">
                     <span><i class="far fa-clock"></i> <%= shop.openingTime %> - <%= shop.closingTime %></span>
-                    <span><i class="fas fa-star"></i> 4.8 (120+ Reviews)</span>
-                </div>
+                    
+                    <span>
+                        <i class="fas fa-star" style="color: #fbbf24;"></i> 
+                        <%= shop.averageRating > 0 ? shop.averageRating.toFixed(1) : 'New' %> 
+                        <span style="font-size: 0.85em; opacity: 0.9;">(<%= shop.totalReviews %> Reviews)</span>
+                    </span>
+                    </div>
             </div>
         </div>
     </div>

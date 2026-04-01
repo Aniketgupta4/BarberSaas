@@ -12,4 +12,6 @@ router.post('/delete-booking/:id', userController.deleteBooking);
 
 router.post('/confirm-reschedule', userController.confirmReschedule);
 
+router.post('/rate-service', userController.rateService);
+
 module.exports = router;

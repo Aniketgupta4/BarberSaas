@@ -37,33 +37,33 @@ exports.getOwnerManage = async (req, res) => {
 exports.setupShop = async (req, res) => {
     try {
         const ownerId = res.locals.user._id;
-        const { shopName, address, openingTime, closingTime, longitude, latitude, facilities } = req.body;
+        // 🔴 Naya: isOpen added to destructuring
+        const { shopName, address, openingTime, closingTime, longitude, latitude, facilities, isOpen } = req.body;
 
-        // Facilities ko array mein convert karo
         let facilitiesArray = facilities ? facilities.split(',').map(item => item.trim()) : [];
-        
-        // Image check (Cloudinary path)
         let bannerImage = req.file ? req.file.path : 'default-shop.jpg';
 
-        // Location object for MongoDB GeoJSON
         const locationInfo = {
             type: 'Point',
             coordinates: [parseFloat(longitude), parseFloat(latitude)]
         };
 
         let shop = await Shop.findOne({ ownerId });
+        
+        // Convert isOpen from form string ('on') to boolean
+        const shopStatus = isOpen === 'on' || isOpen === true; 
+
         if (shop) {
-            // Update Existing Shop
             shop.shopName = shopName;
             shop.address = address;
             shop.openingTime = openingTime;
             shop.closingTime = closingTime;
             shop.location = locationInfo;
             shop.facilities = facilitiesArray;
-            if (req.file) shop.bannerImage = bannerImage; // Nayi image hai toh update karo
+            shop.isOpen = shopStatus; // 🔴 Update status
+            if (req.file) shop.bannerImage = bannerImage;
             await shop.save();
         } else {
-            // Create New Shop
             await Shop.create({
                 ownerId, 
                 shopName, 
@@ -72,13 +72,36 @@ exports.setupShop = async (req, res) => {
                 closingTime, 
                 location: locationInfo, 
                 bannerImage, 
-                facilities: facilitiesArray
+                facilities: facilitiesArray,
+                isOpen: shopStatus // 🔴 Set status
             });
         }
         res.redirect('/owner/manage');
     } catch (error) {
         console.error("Shop Setup Error:", error);
         res.status(400).send("Error setting up shop. Make sure coordinates are numbers.");
+    }
+};
+
+// 🔴 NAYA FUNCTION: Toggle Shop Open/Closed Status
+exports.toggleShopStatus = async (req, res) => {
+    try {
+        const ownerId = res.locals.user._id;
+        const shop = await Shop.findOne({ ownerId });
+
+        if (!shop) {
+            return res.status(404).send("Shop not found");
+        }
+
+        // Flip the status (true to false, false to true)
+        shop.isOpen = !shop.isOpen;
+        await shop.save();
+
+        console.log(`Shop status changed to: ${shop.isOpen ? 'OPEN' : 'CLOSED'}`);
+        res.redirect('/owner/manage');
+    } catch (error) {
+        console.error("Toggle Status Error:", error);
+        res.status(500).send("Server Error changing status");
     }
 };
 
@@ -107,7 +130,7 @@ exports.addService = async (req, res) => {
     }
 };
 
-// 4. Add New Employee (Updated with all model fields)
+// 4. Add New Employee
 exports.addEmployee = async (req, res) => {
     try {
         const { name, specialty, phone, isAvailable } = req.body;
@@ -120,7 +143,7 @@ exports.addEmployee = async (req, res) => {
             name, 
             specialty, 
             phone,
-            isAvailable: isAvailable === 'true' // Boolean conversion
+            isAvailable: isAvailable === 'true'
         });
         
         res.redirect('/owner/manage');
@@ -144,15 +167,13 @@ exports.getOwnerRequests = async (req, res) => {
             return res.render('owner-requests', { appointments: [], error: 'Please setup your shop profile first.' });
         }
 
-        // 🔢 Pagination Setup
         const page = parseInt(req.query.page) || 1;
-        const limit = 5; // Ek page par 5 bookings
+        const limit = 5; 
         const skip = (page - 1) * limit;
 
         const totalAppointments = await Appointment.countDocuments({ shopId: shop._id });
         const totalPages = Math.ceil(totalAppointments / limit);
 
-        // Fetch paginated bookings
         const appointments = await Appointment.find({ shopId: shop._id })
             .populate('userId', 'name phone email')
             .populate('serviceId', 'serviceName price duration')
@@ -163,7 +184,7 @@ exports.getOwnerRequests = async (req, res) => {
         res.render('owner-requests', { 
             title: 'Booking Requests', 
             appointments,
-            currentPage: page,  // Pagination variables
+            currentPage: page, 
             totalPages
         });
     } catch (error) {
@@ -176,20 +197,14 @@ exports.getOwnerRequests = async (req, res) => {
 exports.updateRequest = async (req, res) => {
     try {
         const { appointmentId, status, proposedDate, proposedTime } = req.body;
-        
-        console.log("Button Clicked! Status:", status); // Terminal mein check karo ye aa raha hai?
-
         let updateData = { status: status };
 
-        // Agar Reschedule kiya hai toh date/time bhi badlo
         if (status === 'Rescheduled' && proposedDate && proposedTime) {
             updateData.bookingDate = proposedDate;
             updateData.bookingTime = proposedTime;
         }
 
         await Appointment.findByIdAndUpdate(appointmentId, updateData);
-        
-        console.log("Database Updated! ✅");
         res.redirect('/owner/requests'); 
     } catch (error) {
         console.error("Update Error:", error);
@@ -197,25 +212,75 @@ exports.updateRequest = async (req, res) => {
     }
 };
 
-// 7. Get Dashboard
+// 7. Get Dashboard (WITH ADVANCED CUSTOMER & REVENUE ANALYTICS)
 exports.getOwnerDashboard = async (req, res) => {
     try {
         const ownerId = res.locals.user._id;
         const shop = await Shop.findOne({ ownerId });
         
         let services = [];
+        let analytics = {
+            todayRevenue: 0,
+            weekRevenue: 0,
+            monthRevenue: 0,
+            todayCustomers: 0,
+            weekCustomers: 0,   // 🔴 NEW: Weekly Customers
+            monthCustomers: 0,  // 🔴 NEW: Monthly Customers
+            totalCompleted: 0
+        };
+
         if (shop) {
             services = await Service.find({ shopId: shop._id });
+            
+            const completedAppointments = await Appointment.find({ 
+                shopId: shop._id, 
+                status: 'Completed' 
+            }).populate('serviceId');
+
+            analytics.totalCompleted = completedAppointments.length;
+
+            const now = new Date();
+            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay());
+            startOfWeek.setHours(0, 0, 0, 0);
+
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+            completedAppointments.forEach(app => {
+                const price = app.serviceId ? app.serviceId.price : 0; 
+                const appDate = new Date(app.updatedAt); 
+
+                // Today's Calc (Revenue + Customers)
+                if (appDate >= startOfDay) {
+                    analytics.todayRevenue += price;
+                    analytics.todayCustomers += 1;
+                }
+                
+                // Weekly Calc (Revenue + Customers)
+                if (appDate >= startOfWeek) {
+                    analytics.weekRevenue += price;
+                    analytics.weekCustomers += 1;
+                }
+
+                // Monthly Calc (Revenue + Customers)
+                if (appDate >= startOfMonth) {
+                    analytics.monthRevenue += price;
+                    analytics.monthCustomers += 1;
+                }
+            });
         }
 
         res.render('owner-dashboard', { 
-            title: 'Owner Dashboard | BarberSaaS', 
+            title: 'Analytics Dashboard | BarberSaaS', 
             shop, 
-            services 
+            services,
+            analytics 
         });
     } catch (error) {
         console.log("Dashboard Error:", error);
-        res.status(500).send("Server Error");
+        res.status(500).send("Server Error in loading Dashboard");
     }
 };
 
@@ -224,7 +289,6 @@ exports.deleteEmployee = async (req, res) => {
     try {
         const employeeId = req.params.id;
         await Employee.findByIdAndDelete(employeeId);
-        console.log("Employee Deleted Successfully! 🗑️");
         res.redirect('/owner/manage');
     } catch (error) {
         console.error("Delete Employee Error:", error);
@@ -237,7 +301,6 @@ exports.deleteService = async (req, res) => {
     try {
         const serviceId = req.params.id; 
         await Service.findByIdAndDelete(serviceId);
-        console.log("Service Deleted Successfully! ✂️🗑️");
         res.redirect('/owner/manage'); 
     } catch (error) {
         console.error("Delete Service Error:", error);
@@ -245,17 +308,33 @@ exports.deleteService = async (req, res) => {
     }
 };
 
+// 10. Delete Booking Request
+exports.deleteRequest = async (req, res) => {
+    try {
+        const appointmentId = req.params.id;
+        await Appointment.findByIdAndDelete(appointmentId);
+        res.redirect('/owner/requests');
+    } catch (error) {
+        console.error("Delete Error:", error);
+        res.status(500).send("Delete nahi ho paya.");
+    }
+};
+
 // ==========================================
 // PART 3: PUBLIC SEARCH (NEW - WORKING GPS)
 // ==========================================
 
-// 10. Home Search Logic (By Name, Place, Services, and GPS)
+
+
+// ==========================================
+// PART 3: PUBLIC SEARCH (WORKING GPS & EXPIRY CHECK)
+// ==========================================
+
 exports.getHome = async (req, res) => {
     try {
         const { query, lat, lng } = req.query;
         let findQuery = {};
 
-        // Keyword Search (Name, Place, ya Services/Facilities)
         if (query) {
             findQuery.$or = [
                 { shopName: { $regex: query, $options: 'i' } },
@@ -266,22 +345,34 @@ exports.getHome = async (req, res) => {
 
         let shops;
 
-        // GPS Logic: Agar user ne Near Me dabaya aur search kiya
+        // GPS Logic
         if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
             shops = await Shop.aggregate([
                 {
                     $geoNear: {
                         near: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
-                        distanceField: "dist.calculated", // Distance field generate karega
-                        maxDistance: 20000, // 20km radius
+                        distanceField: "dist.calculated",
+                        maxDistance: 20000,
                         query: findQuery,
                         spherical: true
                     }
-                }
+                },
+                // 🔴 Owner Details Lookup (For Expiry Check)
+                {
+                    $lookup: {
+                        from: "users", // Database collection name
+                        localField: "ownerId",
+                        foreignField: "_id",
+                        as: "ownerId" // Alias
+                    }
+                },
+                { $unwind: "$ownerId" }
             ]);
         } else {
-            // Normal Search bina GPS ke
-            shops = await Shop.find(findQuery).sort({ createdAt: -1 });
+            // Normal Search with Population
+            shops = await Shop.find(findQuery)
+                .populate('ownerId') // 🔴 Owner ka data populate karo
+                .sort({ createdAt: -1 });
         }
 
         res.render('home', { 
@@ -293,20 +384,5 @@ exports.getHome = async (req, res) => {
     } catch (error) {
         console.error("Home Search Error:", error);
         res.status(500).send("Bhai search failed ho gayi!");
-    }
-};
-
-
-// 2. Naya Function: Booking Delete Karne Ke Liye
-exports.deleteRequest = async (req, res) => {
-    try {
-        const appointmentId = req.params.id;
-        await Appointment.findByIdAndDelete(appointmentId);
-        
-        console.log("Record Permanently Deleted! 🗑️");
-        res.redirect('/owner/requests');
-    } catch (error) {
-        console.error("Delete Error:", error);
-        res.status(500).send("Delete nahi ho paya.");
     }
 };
