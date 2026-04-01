@@ -198,19 +198,24 @@
                     </thead>
                     <tbody>
                         <% if (owners && owners.length > 0) { %>
-                            <% owners.forEach(owner => { %>
+                            <% owners.forEach(owner => { 
+                                // 🔴 FIX: Check Date Expiry Dynamically
+                                let today = new Date();
+                                let subEnd = new Date(owner.subscriptionEnd);
+                                let isExpired = (owner.isActive === false) || (owner.subscriptionEnd && subEnd < today);
+                            %>
                                 <tr>
                                     <td data-label="Partner">
                                         <div style="font-weight: 800; color: var(--dark); font-size: 1rem;"><%= owner.name %></div>
                                         <div style="font-size: 0.8rem; color: var(--slate); margin-top: 2px;"><i class="fas fa-envelope"></i> <%= owner.email %></div>
                                     </td>
                                     <td data-label="Status">
-                                        <span class="status-badge <%= owner.isActive ? 'status-active' : 'status-expired' %>">
-                                            <%= owner.isActive ? 'ACTIVE' : 'EXPIRED' %>
+                                        <span class="status-badge <%= isExpired ? 'status-expired' : 'status-active' %>">
+                                            <%= isExpired ? 'EXPIRED' : 'ACTIVE' %>
                                         </span>
                                     </td>
                                     <td data-label="Expiry">
-                                        <span style="font-weight: 700; color: #475569;"><%= owner.subscriptionEnd ? owner.subscriptionEnd.toDateString() : 'No Plan' %></span>
+                                        <span style="font-weight: 700; color: <%= isExpired ? 'var(--danger)' : '#475569' %>;"><%= owner.subscriptionEnd ? owner.subscriptionEnd.toDateString() : 'No Plan' %></span>
                                     </td>
                                     <td data-label="Action">
                                         <div class="action-btns" style="display: flex; gap: 10px; justify-content: flex-end;">
@@ -268,7 +273,14 @@
                 </thead>
                 <tbody>
                     <% if (typeof allShops !== 'undefined' && allShops.length > 0) { %>
-                        <% allShops.forEach(shop => { %>
+                        <% allShops.forEach(shop => { 
+                            // 🔴 FIX: Master Table mein bhi Expiry logic laga diya
+                            let ownerExpired = false;
+                            if(shop.ownerId) {
+                                let today = new Date();
+                                ownerExpired = shop.ownerId.isActive === false || (shop.ownerId.subscriptionEnd && new Date(shop.ownerId.subscriptionEnd) < today);
+                            }
+                        %>
                             <tr>
                                 <td data-label="Shop Name">
                                     <div class="shop-mini-cell">
@@ -289,8 +301,8 @@
                                     </div>
                                 </td>
                                 <td data-label="Status">
-                                    <span class="status-badge <%= shop.isOpen ? 'status-active' : 'status-warning' %>">
-                                        <%= shop.isOpen ? 'OPEN' : 'CLOSED' %>
+                                    <span class="status-badge <%= ownerExpired ? 'status-expired' : (shop.isOpen ? 'status-active' : 'status-warning') %>">
+                                        <%= ownerExpired ? 'OWNER EXPIRED' : (shop.isOpen ? 'OPEN' : 'CLOSED') %>
                                     </span>
                                 </td>
                                 <td data-label="View" style="text-align: right;">
